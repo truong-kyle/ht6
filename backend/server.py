@@ -50,18 +50,17 @@ def create_checkout_session():
         
         # Add custom fees as separate line items
         for fee_name, fee_amount in fees.items():
-            if fee_amount > 0:  # Only add fees with positive amounts
-                line_items.append({
-                    'price_data': {
-                        'currency': 'cad',
-                        'product_data': {
-                            'name': fee_name.replace('_', ' ').title(),
-                            'description': f'{fee_name.replace("_", " ").title()} fee',
-                        },
-                        'unit_amount': int(fee_amount * 100),  # Convert to cents
+            line_items.append({
+                'price_data': {
+                    'currency': 'cad',
+                    'product_data': {
+                        'name': fee_name.replace('_', ' ').title(),
+                        'description': f'{fee_name.replace("_", " ").title()} fee',
                     },
-                    'quantity': 1,
-                })
+                    'unit_amount': int(fee_amount * 100),  # Convert to cents
+                },
+                'quantity': 1,
+            })
         
         session = stripe.checkout.Session.create(
             ui_mode="custom",

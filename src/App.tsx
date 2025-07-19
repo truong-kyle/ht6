@@ -103,16 +103,22 @@ export default function CampusCourierLanding() {
           <div className="flex justify-between items-center py-4 max-w-7xl mx-auto">
             <div className="flex items-center space-x-3 group">
               <div className="transform transition-transform duration-300 group-hover:scale-110">
-                <div className="w-12 h-12 bg-gradient-to-r from-red-900 to-red-700 rounded-xl flex items-center justify-center shadow-lg">
-                  <Truck className="w-7 h-7 text-white" />
-                </div>
+              <div className="w-12 h-12 bg-gradient-to-r from-red-900 to-red-700 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
+  <img 
+    src="src/assets/DormDash.png" 
+    alt="Courier Logo" 
+    className="w-full h-full object-cover" 
+  />
+</div>
+
               </div>
               <div className="flex flex-col">
-                <span className="text-xl font-bold text-gray-900">Campus Courier</span>
+                <span className="text-xl font-bold text-gray-900">DormDash</span>
                 <span className="px-2 py-0.5 bg-gradient-to-r from-red-600 to-red-700 text-white text-xs font-medium rounded-full shadow-sm">
                   Fast & Smart
                 </span>
               </div>
+              
             </div>
             
             {/* CHANGE: Added onClick handlers to header buttons */}
