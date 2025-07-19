@@ -8,27 +8,27 @@ const inputs: Vellum.WorkflowRequestInputRequest[] = [
   {
     type: "STRING",
     name: "Weather",
-    value: "<example-string-value>",
+    value: "<Sunny>",
   },
   {
     type: "STRING",
     name: "Time of day",
-    value: "<example-string-value>",
+    value: "<Afternoon>",
   },
   {
     type: "STRING",
     name: "Temperature",
-    value: "<example-string-value>",
+    value: "<25°C>",
   },
   {
     type: "STRING",
     name: "Demand",
-    value: "<example-string-value>",
+    value: "<High>",
   },
   {
     type: "STRING",
     name: "Active Walkers",
-    value: "<example-string-value>",
+    value: "<10>",
   },
 ]
 
