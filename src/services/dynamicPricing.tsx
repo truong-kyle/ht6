@@ -1,6 +1,6 @@
 import { checkIncentive } from "./checkIncentives";
 
-const basefee = 2   // Base fee in CAD
+const basefee = 0  // Base fee in CAD
 const perKmFee = 2   // Fee per kilometer in CAD
 let incentive = 0.0 // Default Incentive for demand, e.g., weather conditions, in CAD
 

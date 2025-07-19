@@ -27,5 +27,6 @@ def modify_order():
     cart = []
     return jsonify(success=True, message="Backend cart cleared")
 
+
 if __name__ == '__main__':
     app.run(port=4242)

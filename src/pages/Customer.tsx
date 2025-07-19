@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, Search, ShoppingCart, Clock, DollarSign, Star, Phone, Navigation, CheckCircle } from 'lucide-react';
-
+import { calculatePricing } from '../services/dynamicPricing';
 // Define interfaces for proper typing
 interface MenuItem {
   id: number;
@@ -69,6 +69,8 @@ const UserDashboard: React.FC = () => {
   const mapRef = useRef<HTMLDivElement>(null);
   const leafletMapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
+
+  
 
   // Restaurants around York University
   const restaurants: Restaurant[] = [
@@ -435,16 +437,16 @@ const UserDashboard: React.FC = () => {
   };
 
   // Calculate total order cost
-  const calculateOrderTotal = (
+  const calculateOrderTotal = async (
     restaurant: Restaurant,
     cartItems: CartItem[]
-  ): OrderCosts => {
+  ): Promise<OrderCosts> => {
     const subtotal = cartItems.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0
     );
     const deliveryFee = restaurant.deliveryFee;
-    const weatherFee = Math.random() > 0.7 ? 1.99 : 0;
+    const weatherFee = await calculatePricing(calculateDistance(userLocation, restaurant.location));
     const serviceFee = subtotal * 0.05;
     const tax = (subtotal + serviceFee) * 0.13;
 
@@ -513,7 +515,7 @@ const UserDashboard: React.FC = () => {
     const { carrier, distance } = findNearestCarrier(
       selectedRestaurant.location
     );
-    const orderTotal = calculateOrderTotal(selectedRestaurant, cart);
+    const orderTotal = await calculateOrderTotal(selectedRestaurant, cart);
 
     const newOrderDetails: OrderDetails = {
       restaurant: selectedRestaurant,
