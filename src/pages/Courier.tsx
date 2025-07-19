@@ -945,6 +945,6 @@ const CourierDashboard: React.FC = () => {
       </div>
     </div>
   );
-};
+}
 
 export default CourierDashboard;
