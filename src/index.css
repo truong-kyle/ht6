@@ -1,69 +1,276 @@
 @import "tailwindcss";
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+/* Root container - Fixed with proper centering */
+#root {
+  /* Mobile default (0-639px) - Full width, no horizontal padding on mobile */
+  @apply w-full min-h-screen text-center mx-auto;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+  /* sm: 640px+ (small tablets) */
+  @apply sm:max-w-2xl;
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+  /* md: 768px+ (tablets) */
+  @apply md:max-w-4xl;
+
+  /* lg: 1024px+ (laptops) */
+  @apply lg:max-w-5xl;
+
+  /* xl: 1280px+ (desktops) */
+  @apply xl:max-w-6xl;
+
+  /* 2xl: 1536px+ (large desktops) */
+  @apply 2xl:max-w-7xl;
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+/* Prevent horizontal overflow globally */
+html, body {
+  @apply overflow-x-hidden;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+/* Logo - Mobile-first responsive sizing */
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
   }
-  a:hover {
-    color: #747bff;
+}
+
+/* Card component - Fixed width constraints */
+.card {
+  /* Mobile default - Use box-border to include padding in width */
+  @apply my-3 rounded-lg bg-white/5 backdrop-blur-sm border border-white/10 
+         shadow-md transition-all duration-300 p-4 box-border w-full;
+
+  /* sm: 640px+ */
+  @apply sm:p-6 sm:my-4;
+
+  /* md: 768px+ */
+  @apply md:p-7 md:my-4;
+
+  /* lg: 1024px+ */
+  @apply lg:p-8 lg:my-6;
+}
+
+.card:hover {
+  @apply transform -translate-y-1 shadow-xl;
+}
+
+.read-the-docs {
+  /* Mobile default */
+  @apply text-gray-400 text-sm leading-6;
+
+  /* sm: 640px+ */
+  @apply sm:text-base;
+}
+
+/* Safe responsive container utility */
+.responsive-container {
+  /* Mobile default - Simple full width with padding */
+  @apply w-full px-4;
+
+  /* sm: 640px+ */
+  @apply sm:max-w-2xl sm:px-6 sm:mx-auto;
+
+  /* md: 768px+ */
+  @apply md:max-w-4xl md:px-8;
+
+  /* lg: 1024px+ */
+  @apply lg:max-w-5xl;
+
+  /* xl: 1280px+ */
+  @apply xl:max-w-6xl;
+
+  /* 2xl: 1536px+ */
+  @apply 2xl:max-w-7xl;
+}
+
+/* Responsive grid system - Fixed gaps */
+.responsive-grid {
+  /* Mobile: 1 column with safe gaps */
+  @apply grid gap-4 grid-cols-1 w-full;
+
+  /* sm: 640px+ - 2 columns */
+  @apply sm:grid-cols-2 sm:gap-6;
+
+  /* lg: 1024px+ - 3 columns */
+  @apply lg:grid-cols-3 lg:gap-8;
+}
+
+/* Responsive flex utility - Safe spacing */
+.responsive-flex {
+  /* Mobile: column layout with safe gaps */
+  @apply flex flex-col gap-4 items-center justify-center w-full;
+
+  /* md: 768px+ - row layout */
+  @apply md:flex-row md:gap-6;
+}
+
+/* Button styles - Fixed width issues */
+.btn {
+  /* Mobile default - Safe max-width */
+  @apply px-6 py-3 border-none rounded-lg text-base font-medium cursor-pointer 
+         transition-all duration-300 no-underline inline-block text-center 
+         min-w-32 box-border;
+
+  /* Mobile: constrained width to prevent overflow */
+  @apply w-full max-w-xs mx-auto;
+
+  /* md: 768px+ - auto width */
+  @apply md:w-auto md:max-w-none md:mx-0;
+}
+
+.btn-primary {
+  @apply bg-gradient-to-br from-indigo-500 to-purple-600 text-white 
+         hover:transform hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/40;
+}
+
+.btn-secondary {
+  @apply bg-transparent text-indigo-500 border-2 border-indigo-500 
+         hover:bg-indigo-500 hover:text-white;
+}
+
+/* Responsive typography - Safe sizing */
+.heading-xl {
+  /* Mobile - Prevent text overflow */
+  @apply text-3xl font-bold leading-tight mb-4 break-words;
+
+  /* sm: 640px+ */
+  @apply sm:text-4xl;
+
+  /* md: 768px+ */
+  @apply md:text-5xl;
+
+  /* lg: 1024px+ */
+  @apply lg:text-6xl;
+}
+
+.heading-lg {
+  /* Mobile */
+  @apply text-2xl font-bold leading-tight mb-3 break-words;
+
+  /* sm: 640px+ */
+  @apply sm:text-3xl;
+
+  /* md: 768px+ */
+  @apply md:text-4xl;
+
+  /* lg: 1024px+ */
+  @apply lg:text-5xl;
+}
+
+.heading-md {
+  /* Mobile */
+  @apply text-xl font-semibold leading-snug mb-2 break-words;
+
+  /* sm: 640px+ */
+  @apply sm:text-2xl;
+
+  /* md: 768px+ */
+  @apply md:text-3xl;
+}
+
+.text-body {
+  /* Mobile - Safe text wrapping */
+  @apply text-base leading-relaxed mb-4 break-words;
+
+  /* sm: 640px+ */
+  @apply sm:text-lg;
+
+  /* md: 768px+ */
+  @apply md:text-xl;
+}
+
+/* Mobile navigation utilities */
+.mobile-only {
+  @apply block md:hidden;
+}
+
+.desktop-only {
+  @apply hidden md:block;
+}
+
+/* Touch-friendly adjustments for mobile devices */
+@media (hover: none) and (pointer: coarse) {
+  .card:hover {
+    @apply transform-none shadow-md;
   }
-  button {
-    background-color: #f9f9f9;
+
+  .logo:hover {
+    filter: none;
   }
+
+  .btn:hover {
+    @apply transform-none;
+  }
+}
+
+/* Custom responsive breakpoints (if needed) */
+@media (min-width: 1920px) {
+  #root {
+    @apply max-w-screen-2xl;
+  }
+}
+
+/* Welcome page component - Fixed overflow */
+.welcome-hero {
+  @apply bg-gradient-to-br from-indigo-600 to-purple-700 text-white rounded-2xl 
+         p-6 w-full mx-4;
+  @apply sm:p-8 sm:mx-auto sm:max-w-2xl md:p-12 md:max-w-4xl lg:p-16 lg:max-w-5xl;
+}
+
+.welcome-title {
+  @apply text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 
+         font-bold mb-4 sm:mb-6 break-words;
+}
+
+.welcome-description {
+  @apply text-base sm:text-lg md:text-xl lg:text-2xl 
+         leading-relaxed mb-6 sm:mb-8 max-w-4xl mx-auto break-words;
+}
+
+.welcome-actions {
+  @apply flex flex-col sm:flex-row gap-4 sm:gap-6 
+         justify-center items-center flex-wrap w-full;
+}
+
+/* Navigation component - Fixed mobile overflow */
+.nav-container {
+  @apply flex items-center justify-between p-4 sm:p-6 
+         bg-white/10 backdrop-blur-md border-b border-white/20
+         w-full box-border;
+}
+
+.nav-logo {
+  @apply text-xl sm:text-2xl font-bold break-words;
+}
+
+.nav-toggle {
+  @apply block md:hidden cursor-pointer flex-shrink-0;
+}
+
+.nav-menu {
+  /* Mobile: hidden by default, safe positioning */
+  @apply hidden absolute top-full left-0 right-0 
+         bg-white/10 backdrop-blur-md border-b border-white/20
+         flex-col gap-2 p-4 box-border;
+
+  /* Desktop: always visible */
+  @apply md:flex md:static md:w-auto md:bg-transparent md:backdrop-blur-none 
+         md:border-none md:flex-row md:gap-6 md:p-0;
+}
+
+.nav-menu.active {
+  @apply flex md:flex;
+}
+
+.nav-link {
+  @apply block py-2 px-4 rounded-lg transition-colors duration-200
+         hover:bg-white/20 md:py-1 md:px-2 break-words;
+}
+
+/* Additional utility classes to prevent overflow */
+.safe-width {
+  @apply w-full max-w-full box-border;
+}
+
+.no-x-overflow {
+  @apply overflow-x-hidden;
 }
