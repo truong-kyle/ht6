@@ -45,32 +45,35 @@ function AppRouter() {
 
       {/* Protected routes - require authentication */}
       <Route 
-        path="/dashboard" 
-        element={
-          <ProtectedRoute>
-            {/* You'll need to create a dashboard component or redirect to another page */}
-            <div className="min-h-screen flex items-center justify-center">
-              <div className="text-center">
-                <h1 className="text-2xl font-bold mb-4">Choose Your Role</h1>
-                <div className="space-x-4">
-                  <button 
-                    onClick={() => window.location.href = '/courier'}
-                    className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
-                  >
-                    I'm a Courier
-                  </button>
-                  <button 
-                    onClick={() => window.location.href = '/customer'}
-                    className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
-                  >
-                    I'm a Customer
-                  </button>
-                </div>
-              </div>
-            </div>
-          </ProtectedRoute>
-        } 
-      />
+  path="/dashboard" 
+  element={
+    <ProtectedRoute>
+      
+      <div className="w-screen h-screen bg-[#7a1212] flex items-center justify-center">
+  <div className="bg-white p-10 rounded-lg shadow-lg text-center max-w-sm w-full">
+    <img src="src/assets/No-background.png" alt="DormDash Logo" className="mx-auto mb-6 w-24 h-24" />
+    <h1 className="text-3xl font-bold mb-8 text-[#801515]">Choose Your Role</h1>
+    <div className="flex flex-col space-y-4">
+      <button 
+        onClick={() => window.location.href = '/courier'}
+        className="transition-all duration-300 border-2 border-white bg-white text-[#801515] hover:bg-[#801515] hover:text-white px-6 py-3 rounded-lg font-semibold"
+      >
+        I'm a Courier
+      </button>
+      <button 
+        onClick={() => window.location.href = '/customer'}
+        className="transition-all duration-300 border-2 border-white bg-white text-[#801515] hover:bg-[#801515] hover:text-white px-6 py-3 rounded-lg font-semibold"
+      >
+        I'm a Customer
+      </button>
+    </div>
+  </div>
+</div>
+
+    </ProtectedRoute>
+  }
+/>
+
       
       <Route 
         path="/courier" 

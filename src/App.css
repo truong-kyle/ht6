@@ -233,8 +233,10 @@
 /* Custom responsive breakpoints (if needed) */
 @media (min-width: 1920px) {
   #root {
-    @apply max-w-screen-2xl;
+    @apply w-screen h-screen bg-[#7a1212] flex items-center justify-center;
+    /* DO NOT add mx-auto, max-w-*, or p-* here */
   }
+  
 }
 
 /* Tailwind component examples for your pages */
