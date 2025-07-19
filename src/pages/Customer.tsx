@@ -1,15 +1,5 @@
-
-
-import { Link } from "react-router-dom";
 import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, Search, ShoppingCart, Clock, DollarSign, Star, Phone, Navigation, CheckCircle } from 'lucide-react';
-
-// Add Leaflet type declaration
-declare global {
-  interface Window {
-    L: any;
-  }
-}
 
 // Define interfaces for proper typing
 interface MenuItem {
@@ -69,10 +59,8 @@ const UserDashboard: React.FC = () => {
   const [showOrderConfirmation, setShowOrderConfirmation] = useState<boolean>(false);
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number }>({ lat: 43.7735, lng: -79.5019 });
-  const [leafletLoaded, setLeafletLoaded] = useState<boolean>(false);
+  const [mapLoading, setMapLoading] = useState<boolean>(true);
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
-  const markersRef = useRef<{ [key: number]: any }>({});
 
   // Updated restaurants with York University campus locations
   const restaurants: Restaurant[] = [
@@ -150,104 +138,18 @@ const UserDashboard: React.FC = () => {
 
   const categories: string[] = ['All', 'Fast Food', 'Middle Eastern', 'Mediterranean', 'Thai'];
 
-  // Load Leaflet library
+  // Simulate map loading
   useEffect(() => {
-    const loadLeaflet = async () => {
-      if (window.L) {
-        setLeafletLoaded(true);
-        return;
-      }
+    const timer = setTimeout(() => {
+      setMapLoading(false);
+    }, 2000);
 
-      try {
-        // Load CSS
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css';
-        document.head.appendChild(link);
-
-        // Load JS
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js';
-        
-        script.onload = () => {
-          setTimeout(() => {
-            setLeafletLoaded(true);
-          }, 100);
-        };
-        
-        script.onerror = () => {
-          console.error('Failed to load Leaflet');
-        };
-        
-        document.head.appendChild(script);
-      } catch (error) {
-        console.error('Error loading Leaflet:', error);
-      }
-    };
-
-    loadLeaflet();
-
-    return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
-    };
+    return () => clearTimeout(timer);
   }, []);
 
-  // Initialize map once Leaflet is loaded
-  useEffect(() => {
-    if (!leafletLoaded || !mapRef.current || mapInstanceRef.current) return;
-
-    try {
-      // Create map centered on York University
-      const map = window.L.map(mapRef.current).setView([43.7735, -79.5019], 16);
-      
-      // Add OpenStreetMap tiles
-      window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-      }).addTo(map);
-
-      // Add user location marker
-      window.L.marker([43.7735, -79.5019])
-        .addTo(map)
-        .bindPopup('<b>Your Location</b><br>York University Campus')
-        .openPopup();
-
-      // Add restaurant markers
-      restaurants.forEach(restaurant => {
-        const marker = window.L.marker([restaurant.location.lat, restaurant.location.lng])
-          .addTo(map)
-          .bindPopup(`
-            <div class="text-center">
-              <div style="font-size: 24px; margin-bottom: 8px;">${restaurant.image}</div>
-              <b>${restaurant.name}</b><br>
-              <span style="color: #6f1d1b;">${restaurant.category}</span><br>
-              <small>⭐ ${restaurant.rating} • ${restaurant.deliveryTime}</small>
-            </div>
-          `);
-        
-        markersRef.current[restaurant.id] = marker;
-      });
-
-      mapInstanceRef.current = map;
-    } catch (error) {
-      console.error('Error initializing map:', error);
-    }
-  }, [leafletLoaded, restaurants]);
-
-  // Handle restaurant selection and map highlighting
+  // Handle restaurant selection
   const handleRestaurantSelect = (restaurant: Restaurant): void => {
     setSelectedRestaurant(restaurant);
-    
-    if (mapInstanceRef.current && markersRef.current[restaurant.id]) {
-      try {
-        mapInstanceRef.current.setView([restaurant.location.lat, restaurant.location.lng], 17);
-        markersRef.current[restaurant.id].openPopup();
-      } catch (error) {
-        console.error('Error updating map view:', error);
-      }
-    }
   };
 
   // Filter restaurants based on search and category
@@ -361,20 +263,40 @@ const UserDashboard: React.FC = () => {
     <div className="flex h-screen bg-gray-50">
       {/* Left Side - Map */}
       <div className="flex-1 relative">
-        <div 
-          ref={mapRef} 
-          className="absolute inset-0 w-full h-full bg-gray-200"
-          style={{ zIndex: 1 }}
-        >
-          {!leafletLoaded && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-900 mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading map...</p>
+        {mapLoading ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-red-50 to-blue-50">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-900 mx-auto mb-4"></div>
+              <p className="text-gray-600 text-lg mb-2">Loading York University Map...</p>
+              <p className="text-gray-500 text-sm">Finding restaurants near you</p>
+            </div>
+          </div>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-green-100 via-blue-50 to-purple-100 flex items-center justify-center">
+            <div className="text-center p-8">
+              <div className="text-6xl mb-4">🗺️</div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">York University Campus Map</h2>
+              <p className="text-gray-600 mb-4">Interactive map showing restaurant locations</p>
+              <div className="grid grid-cols-2 gap-4 max-w-lg">
+                {restaurants.map(restaurant => (
+                  <div 
+                    key={restaurant.id}
+                    className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                      selectedRestaurant?.id === restaurant.id 
+                        ? 'border-red-900 bg-red-50 shadow-lg' 
+                        : 'border-gray-200 bg-white hover:border-gray-300'
+                    }`}
+                    onClick={() => handleRestaurantSelect(restaurant)}
+                  >
+                    <div className="text-2xl mb-1">{restaurant.image}</div>
+                    <div className="text-sm font-medium">{restaurant.name}</div>
+                    <div className="text-xs text-gray-500">{restaurant.deliveryTime}</div>
+                  </div>
+                ))}
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
         
         {/* Search Bar */}
         <div className="absolute top-4 left-4 right-4 z-10">
@@ -400,7 +322,7 @@ const UserDashboard: React.FC = () => {
                 className={`px-4 py-2 rounded-full whitespace-nowrap transition-all ${
                   selectedCategory === category
                     ? 'bg-red-900 text-white shadow-lg'
-                    : 'bg-white text-red-900 hover:bg-gray-50'
+                    : 'bg-white text-red-900 hover:bg-gray-50 shadow-md'
                 }`}
               >
                 {category}
