@@ -1,13 +1,28 @@
 import { useState, useEffect } from "react";
+// CHANGE: Added useNavigate import for React Router navigation
+import { useNavigate } from "react-router-dom";
 import { MapPin, Clock, DollarSign, Shield, Users, Truck, CloudRain, Route, Star } from "lucide-react";
 
 export default function CampusCourierLanding() {
   const [isVisible, setIsVisible] = useState(false);
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
+  
+  // CHANGE: Added useNavigate hook for programmatic navigation
+  const navigate = useNavigate();
 
   useEffect(() => {
     setIsVisible(true);
   }, []);
+
+  // CHANGE: Added navigation handler for Order Now buttons
+  const handleOrderNow = () => {
+    navigate('/login');
+  };
+
+  // CHANGE: Added navigation handler for Carrier buttons
+  const handleBecomeCarrier = () => {
+    navigate('/login');
+  };
 
   const featureCards = [
     {
@@ -96,11 +111,18 @@ export default function CampusCourierLanding() {
               </div>
             </div>
             
+            {/* CHANGE: Added onClick handlers to header buttons */}
             <div className="flex items-center space-x-4">
-              <button className="px-4 py-2 text-red-900 hover:text-red-700 font-medium transition-all duration-300 transform hover:scale-105 hover:bg-red-50 rounded-lg">
+              <button 
+                onClick={handleBecomeCarrier}
+                className="px-4 py-2 text-red-900 hover:text-red-700 font-medium transition-all duration-300 transform hover:scale-105 hover:bg-red-50 rounded-lg"
+              >
                 For Carriers
               </button>
-              <button className="px-6 py-2 bg-red-900 text-white rounded-lg font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:bg-red-800">
+              <button 
+                onClick={handleOrderNow}
+                className="px-6 py-2 bg-red-900 text-white rounded-lg font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:bg-red-800"
+              >
                 Order Now
               </button>
             </div>
@@ -131,13 +153,19 @@ export default function CampusCourierLanding() {
             ))}
           </div>
 
-          {/* CTA Buttons */}
+          {/* CHANGE: Added onClick handlers to hero CTA buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <button className="inline-flex items-center px-8 py-4 bg-red-900 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:bg-red-800 group">
+            <button 
+              onClick={handleOrderNow}
+              className="inline-flex items-center px-8 py-4 bg-red-900 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:bg-red-800 group"
+            >
               <Truck className="w-5 h-5 mr-2 transition-transform duration-300 group-hover:rotate-12" />
               Order Food Now
             </button>
-            <button className="inline-flex items-center px-8 py-4 bg-gray-100/80 backdrop-blur-sm text-gray-700 font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 hover:bg-gray-200 hover:shadow-lg">
+            <button 
+              onClick={handleBecomeCarrier}
+              className="inline-flex items-center px-8 py-4 bg-gray-100/80 backdrop-blur-sm text-gray-700 font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 hover:bg-gray-200 hover:shadow-lg"
+            >
               <Users className="w-5 h-5 mr-2" />
               Become a Carrier
             </button>
@@ -305,8 +333,12 @@ export default function CampusCourierLanding() {
           <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
             Join thousands of students who trust Campus Courier for fast, reliable food delivery
           </p>
+          {/* CHANGE: Added onClick handler to final CTA "Start Ordering" button */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="inline-flex items-center px-8 py-4 bg-red-900 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:bg-red-800 group">
+            <button 
+              onClick={handleOrderNow}
+              className="inline-flex items-center px-8 py-4 bg-red-900 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:bg-red-800 group"
+            >
               <Star className="w-5 h-5 mr-2 transition-transform duration-300 group-hover:rotate-12" />
               Start Ordering
             </button>
