@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, Search, ShoppingCart, Clock, DollarSign, Star, Phone, Navigation, CheckCircle } from 'lucide-react';
 
@@ -58,11 +59,15 @@ const UserDashboard: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showOrderConfirmation, setShowOrderConfirmation] = useState<boolean>(false);
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
+  // York University coordinates (4700 Keele St)
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number }>({ lat: 43.7735, lng: -79.5019 });
   const [mapLoading, setMapLoading] = useState<boolean>(true);
+  const [hoveredRestaurant, setHoveredRestaurant] = useState<number | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
+  const leafletMapRef = useRef<any>(null);
+  const markersRef = useRef<any[]>([]);
 
-  // Updated restaurants with York University campus locations
+  // Restaurants around York University
   const restaurants: Restaurant[] = [
     {
       id: 1,
@@ -72,7 +77,7 @@ const UserDashboard: React.FC = () => {
       deliveryTime: "15-25 min",
       deliveryFee: 2.99,
       image: "🍗",
-      location: { lat: 43.7736, lng: -79.5023 },
+      location: { lat: 43.7742, lng: -79.5028 },
       phone: "(416) 736-5000",
       menu: [
         { id: 1, name: "Chicken Sandwich", price: 12.99, description: "Crispy chicken breast with mayo and pickles" },
@@ -88,7 +93,7 @@ const UserDashboard: React.FC = () => {
       deliveryTime: "20-30 min",
       deliveryFee: 3.49,
       image: "🥙",
-      location: { lat: 43.7742, lng: -79.5015 },
+      location: { lat: 43.7728, lng: -79.5015 },
       phone: "(416) 736-5001",
       menu: [
         { id: 4, name: "Chicken Shawarma", price: 11.99, description: "Marinated chicken with garlic sauce and vegetables" },
@@ -104,7 +109,7 @@ const UserDashboard: React.FC = () => {
       deliveryTime: "25-35 min",
       deliveryFee: 4.99,
       image: "🥗",
-      location: { lat: 43.7728, lng: -79.5031 },
+      location: { lat: 43.7748, lng: -79.5035 },
       phone: "(416) 736-5002",
       menu: [
         { id: 7, name: "Chicken Souvlaki", price: 14.99, description: "Grilled chicken skewers with Greek salad" },
@@ -120,7 +125,7 @@ const UserDashboard: React.FC = () => {
       deliveryTime: "18-28 min",
       deliveryFee: 2.49,
       image: "🍜",
-      location: { lat: 43.7748, lng: -79.5008 },
+      location: { lat: 43.7722, lng: -79.5008 },
       phone: "(416) 736-5003",
       menu: [
         { id: 10, name: "Pad Thai", price: 11.99, description: "Classic Thai noodles with shrimp or chicken" },
@@ -131,33 +136,188 @@ const UserDashboard: React.FC = () => {
   ];
 
   const carriers: Carrier[] = [
-    { id: 1, name: "Alex", location: { lat: 43.7740, lng: -79.5025 }, available: true },
-    { id: 2, name: "Sarah", location: { lat: 43.7750, lng: -79.5030 }, available: true },
-    { id: 3, name: "Mike", location: { lat: 43.7735, lng: -79.5020 }, available: true }
+    { id: 1, name: "Alex", location: { lat: 43.7738, lng: -79.5025 }, available: true },
+    { id: 2, name: "Sarah", location: { lat: 43.7745, lng: -79.5018 }, available: true },
+    { id: 3, name: "Mike", location: { lat: 43.7730, lng: -79.5032 }, available: true }
   ];
 
   const categories: string[] = ['All', 'Fast Food', 'Middle Eastern', 'Mediterranean', 'Thai'];
 
-  // Simulate map loading
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setMapLoading(false);
-    }, 2000);
+  // Filter restaurants based on search and category - MOVED UP BEFORE USE
+  const filteredRestaurants = restaurants.filter(restaurant => {
+    const matchesSearch = restaurant.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'All' || restaurant.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
-    return () => clearTimeout(timer);
-  }, []);
+  // Update carrier markers
+  const updateCarrierMarkers = () => {
+    if (!leafletMapRef.current) return;
+
+    carriers.forEach(carrier => {
+      if (carrier.available) {
+        const carrierIcon = (window as any).L.divIcon({
+          className: 'carrier-marker',
+          html: `<div style="background: #059669; border: 2px solid white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); animation: bounce 1s infinite;">
+                   🚗
+                   <div style="position: absolute; top: -30px; left: 50%; transform: translateX(-50%); background: #059669; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; white-space: nowrap;">${carrier.name}</div>
+                 </div>`,
+          iconSize: [24, 24],
+          iconAnchor: [12, 12]
+        });
+
+        (window as any).L.marker([carrier.location.lat, carrier.location.lng], { icon: carrierIcon })
+          .addTo(leafletMapRef.current)
+          .bindPopup(`<b>${carrier.name}</b><br>Available Carrier`);
+      }
+    });
+  };
+
+  // Update restaurant markers
+  const updateRestaurantMarkers = () => {
+    if (!leafletMapRef.current) return;
+
+    // Clear existing restaurant markers
+    markersRef.current.forEach(marker => {
+      leafletMapRef.current.removeLayer(marker);
+    });
+    markersRef.current = [];
+
+    filteredRestaurants.forEach(restaurant => {
+      const isSelected = selectedRestaurant?.id === restaurant.id;
+      const isHovered = hoveredRestaurant === restaurant.id;
+      
+      const restaurantIcon = (window as any).L.divIcon({
+        className: 'restaurant-marker',
+        html: `<div style="
+          background: ${isSelected ? '#dc2626' : 'white'}; 
+          border: 3px solid ${isSelected ? '#dc2626' : '#6b7280'}; 
+          width: ${isSelected || isHovered ? '48px' : '40px'}; 
+          height: ${isSelected || isHovered ? '48px' : '40px'}; 
+          border-radius: 50%; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center; 
+          font-size: ${isSelected || isHovered ? '20px' : '18px'}; 
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3); 
+          cursor: pointer;
+          transition: all 0.3s ease;
+          ${isSelected ? 'transform: scale(1.1);' : ''}
+        ">${restaurant.image}</div>`,
+        iconSize: [isSelected || isHovered ? 48 : 40, isSelected || isHovered ? 48 : 40],
+        iconAnchor: [isSelected || isHovered ? 24 : 20, isSelected || isHovered ? 24 : 20]
+      });
+
+      const marker = (window as any).L.marker([restaurant.location.lat, restaurant.location.lng], { 
+        icon: restaurantIcon 
+      })
+        .addTo(leafletMapRef.current)
+        .bindPopup(`
+          <div style="text-align: center; min-width: 200px;">
+            <div style="font-size: 24px; margin-bottom: 8px;">${restaurant.image}</div>
+            <h3 style="margin: 0 0 4px 0; font-weight: bold;">${restaurant.name}</h3>
+            <div style="background: #fef2f2; color: #991b1b; padding: 2px 8px; border-radius: 12px; font-size: 12px; display: inline-block; margin-bottom: 8px;">${restaurant.category}</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; font-size: 12px;">
+              <span>⭐ ${restaurant.rating}</span>
+              <span>🕒 ${restaurant.deliveryTime}</span>
+            </div>
+            <div style="color: #059669; font-weight: bold; font-size: 12px;">$${restaurant.deliveryFee} delivery fee</div>
+          </div>
+        `)
+        .on('click', () => handleRestaurantSelect(restaurant))
+        .on('mouseover', () => setHoveredRestaurant(restaurant.id))
+        .on('mouseout', () => setHoveredRestaurant(null));
+
+      markersRef.current.push(marker);
+
+      // Auto-open popup for selected restaurant
+      if (isSelected) {
+        marker.openPopup();
+      }
+    });
+  };
 
   // Handle restaurant selection
   const handleRestaurantSelect = (restaurant: Restaurant): void => {
     setSelectedRestaurant(restaurant);
   };
 
-  // Filter restaurants based on search and category
-  const filteredRestaurants = restaurants.filter(restaurant => {
-    const matchesSearch = restaurant.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || restaurant.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  // Initialize Leaflet map
+  useEffect(() => {
+    const initializeMap = async () => {
+      try {
+        // Load Leaflet CSS and JS
+        const linkElement = document.createElement('link');
+        linkElement.rel = 'stylesheet';
+        linkElement.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+        document.head.appendChild(linkElement);
+
+        // Wait for CSS to load
+        await new Promise(resolve => {
+          linkElement.onload = resolve;
+        });
+
+        // Load Leaflet JavaScript
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+        document.body.appendChild(script);
+
+        script.onload = () => {
+          if (mapRef.current && !leafletMapRef.current) {
+            // Initialize the map centered on York University
+            leafletMapRef.current = (window as any).L.map(mapRef.current).setView([43.7735, -79.5019], 15);
+
+            // Add OpenStreetMap tiles
+            (window as any).L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              attribution: '© OpenStreetMap contributors',
+              maxZoom: 19
+            }).addTo(leafletMapRef.current);
+
+            // Add user location marker
+            const userIcon = (window as any).L.divIcon({
+              className: 'user-marker',
+              html: `<div style="background: #2563eb; border: 3px solid white; width: 20px; height: 20px; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.3); position: relative;">
+                       <div style="position: absolute; top: -35px; left: 50%; transform: translateX(-50%); background: #2563eb; color: white; padding: 4px 8px; border-radius: 6px; font-size: 11px; white-space: nowrap; font-weight: bold;">4700 Keele St</div>
+                     </div>`,
+              iconSize: [20, 20],
+              iconAnchor: [10, 10]
+            });
+
+            (window as any).L.marker([userLocation.lat, userLocation.lng], { icon: userIcon })
+              .addTo(leafletMapRef.current)
+              .bindPopup('<b>Your Location</b><br>4700 Keele Street<br>York University');
+
+            // Add restaurant markers
+            updateRestaurantMarkers();
+            
+            // Add carrier markers
+            updateCarrierMarkers();
+
+            setMapLoading(false);
+          }
+        };
+      } catch (error) {
+        console.error('Error loading Leaflet:', error);
+        setMapLoading(false);
+      }
+    };
+
+    initializeMap();
+
+    return () => {
+      if (leafletMapRef.current) {
+        leafletMapRef.current.remove();
+        leafletMapRef.current = null;
+      }
+    };
+  }, []);
+
+  // Update restaurant markers when filtered restaurants change
+  useEffect(() => {
+    if (leafletMapRef.current) {
+      updateRestaurantMarkers();
+    }
+  }, [filteredRestaurants, selectedRestaurant, hoveredRestaurant]);
 
   // Calculate distance between two points
   const calculateDistance = (loc1: { lat: number; lng: number }, loc2: { lat: number; lng: number }): number => {
@@ -261,68 +421,49 @@ const UserDashboard: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Left Side - Map */}
+      {/* Left Side - Leaflet Map */}
       <div className="flex-1 relative">
         {mapLoading ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-red-50 to-blue-50">
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-red-50 to-blue-50 z-50">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-900 mx-auto mb-4"></div>
               <p className="text-gray-600 text-lg mb-2">Loading York University Map...</p>
-              <p className="text-gray-500 text-sm">Finding restaurants near you</p>
+              <p className="text-gray-500 text-sm">4700 Keele St, North York, ON</p>
             </div>
           </div>
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-green-100 via-blue-50 to-purple-100 flex items-center justify-center">
-            <div className="text-center p-8">
-              <div className="text-6xl mb-4">🗺️</div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">York University Campus Map</h2>
-              <p className="text-gray-600 mb-4">Interactive map showing restaurant locations</p>
-              <div className="grid grid-cols-2 gap-4 max-w-lg">
-                {restaurants.map(restaurant => (
-                  <div 
-                    key={restaurant.id}
-                    className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                      selectedRestaurant?.id === restaurant.id 
-                        ? 'border-red-900 bg-red-50 shadow-lg' 
-                        : 'border-gray-200 bg-white hover:border-gray-300'
-                    }`}
-                    onClick={() => handleRestaurantSelect(restaurant)}
-                  >
-                    <div className="text-2xl mb-1">{restaurant.image}</div>
-                    <div className="text-sm font-medium">{restaurant.name}</div>
-                    <div className="text-xs text-gray-500">{restaurant.deliveryTime}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
+        ) : null}
+        
+        {/* Map Container */}
+        <div 
+          ref={mapRef}
+          className="absolute inset-0 w-full h-full z-10"
+        />
         
         {/* Search Bar */}
-        <div className="absolute top-4 left-4 right-4 z-10">
+        <div className="absolute top-4 left-4 right-1/4 z-30">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="text"
-              placeholder="Search restaurants..."
+              placeholder="Search restaurants near York University..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-white rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-red-900 border-0"
+              className="w-full pl-10 pr-4 py-3 bg-white rounded-xl shadow-lg focus:outline-none focus:ring-2 focus:ring-red-600 border-0"
             />
           </div>
         </div>
 
         {/* Category Filter */}
-        <div className="absolute top-20 left-4 right-4 z-10">
+        <div className="absolute top-20 left-4 right-1/4 z-30">
           <div className="flex gap-2 overflow-x-auto pb-2">
             {categories.map(category => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-full whitespace-nowrap transition-all ${
+                className={`px-4 py-2 rounded-full whitespace-nowrap transition-all font-medium ${
                   selectedCategory === category
-                    ? 'bg-red-900 text-white shadow-lg'
-                    : 'bg-white text-red-900 hover:bg-gray-50 shadow-md'
+                    ? 'bg-red-900 text-white shadow-lg transform scale-105'
+                    : 'bg-white text-red-900 hover:bg-red-50 shadow-md hover:shadow-lg'
                 }`}
               >
                 {category}
@@ -330,13 +471,42 @@ const UserDashboard: React.FC = () => {
             ))}
           </div>
         </div>
+
+        {/* Map Legend */}
+        <div className="absolute bottom-4 left-4 bg-white rounded-xl shadow-2xl p-4 border border-gray-200 z-20">
+          <h4 className="font-semibold text-sm mb-3 text-gray-800">York University Area</h4>
+          <div className="space-y-2 text-xs">
+            <div className="flex items-center">
+              <div className="w-4 h-4 bg-blue-600 rounded-full mr-3 border-2 border-white"></div>
+              <span>4700 Keele St (You)</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-4 h-4 bg-white border-2 border-gray-400 rounded-full mr-3 flex items-center justify-center">
+                <span className="text-xs">🍕</span>
+              </div>
+              <span>Restaurants</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-4 h-4 bg-green-500 rounded-full mr-3 border border-white"></div>
+              <span>Available Carriers</span>
+            </div>
+          </div>
+          <div className="mt-3 pt-2 border-t border-gray-200 text-xs text-gray-600">
+            <MapPin size={12} className="inline mr-1" />
+            North York, ON M3J 1P3
+          </div>
+        </div>
       </div>
 
       {/* Right Side - Restaurant List */}
-      <div className="w-96 bg-white shadow-xl overflow-hidden flex flex-col">
-        <div className="p-4 bg-gradient-to-br from-red-900 to-red-800 text-white">
-          <h2 className="text-xl font-bold mb-1">York University Restaurants</h2>
-          <p className="opacity-90 text-sm">{filteredRestaurants.length} restaurants available</p>
+      <div className="w-96 bg-white shadow-2xl overflow-hidden flex flex-col">
+        <div className="p-6 bg-gradient-to-br from-red-900 to-red-800 text-white">
+          <h2 className="text-xl font-bold mb-2">York University Delivery</h2>
+          <p className="opacity-90 text-sm">{filteredRestaurants.length} restaurants near campus</p>
+          <div className="flex items-center mt-2 text-sm opacity-75">
+            <MapPin size={14} className="mr-1" />
+            4700 Keele St Area
+          </div>
         </div>
         
         <div className="flex-1 overflow-y-auto">
@@ -345,44 +515,52 @@ const UserDashboard: React.FC = () => {
               key={restaurant.id}
               className={`p-4 border-b cursor-pointer transition-all hover:bg-gray-50 ${
                 selectedRestaurant?.id === restaurant.id 
-                  ? 'bg-blue-50 border-l-4 border-l-red-900' 
+                  ? 'bg-red-50 border-l-4 border-l-red-900 shadow-md' 
                   : 'border-gray-200'
               }`}
               onClick={() => handleRestaurantSelect(restaurant)}
+              onMouseEnter={() => setHoveredRestaurant(restaurant.id)}
+              onMouseLeave={() => setHoveredRestaurant(null)}
             >
               <div className="flex items-start justify-between mb-2">
                 <div className="flex items-center">
                   <span className="text-2xl mr-3">{restaurant.image}</span>
                   <div>
                     <h3 className="font-semibold text-gray-900">{restaurant.name}</h3>
-                    <p className="text-sm text-red-900">{restaurant.category}</p>
+                    <p className="text-sm text-red-900 bg-red-100 px-2 py-1 rounded-full inline-block">{restaurant.category}</p>
                   </div>
                 </div>
                 <div className="text-right text-sm">
-                  <div className="flex items-center text-yellow-500">
+                  <div className="flex items-center text-yellow-500 mb-1">
                     <Star size={14} className="mr-1 fill-current" />
-                    <span>{restaurant.rating}</span>
+                    <span className="font-medium">{restaurant.rating}</span>
                   </div>
                 </div>
               </div>
               
               <div className="flex items-center justify-between text-sm text-gray-600">
                 <div className="flex items-center">
-                  <Clock size={14} className="mr-1" />
+                  <Clock size={14} className="mr-1 text-blue-500" />
                   <span>{restaurant.deliveryTime}</span>
                 </div>
                 <div className="flex items-center">
-                  <DollarSign size={14} className="mr-1" />
+                  <DollarSign size={14} className="mr-1 text-green-500" />
                   <span>${restaurant.deliveryFee} delivery</span>
                 </div>
               </div>
+              
+              {selectedRestaurant?.id === restaurant.id && (
+                <div className="mt-3 p-2 bg-red-100 rounded-lg">
+                  <p className="text-xs text-red-800 font-medium">📍 Selected for delivery to York University</p>
+                </div>
+              )}
             </div>
           ))}
         </div>
 
         {/* Selected Restaurant Menu */}
         {selectedRestaurant && (
-          <div className="border-t border-gray-200 max-h-96 overflow-y-auto bg-blue-50">
+          <div className="border-t-2 border-red-200 max-h-96 overflow-y-auto bg-red-50">
             <div className="p-4">
               <h3 className="font-bold text-lg mb-3 flex items-center text-red-900">
                 <ShoppingCart size={20} className="mr-2" />
@@ -390,15 +568,15 @@ const UserDashboard: React.FC = () => {
               </h3>
               
               {selectedRestaurant.menu.map(item => (
-                <div key={item.id} className="bg-white rounded-lg p-3 mb-2 shadow-sm border border-gray-100">
+                <div key={item.id} className="bg-white rounded-lg p-3 mb-3 shadow-sm border border-red-100">
                   <div className="flex justify-between items-start mb-1">
-                    <h4 className="font-medium">{item.name}</h4>
+                    <h4 className="font-medium text-gray-900">{item.name}</h4>
                     <span className="font-bold text-red-900">${item.price}</span>
                   </div>
-                  <p className="text-sm text-gray-600 mb-2">{item.description}</p>
+                  <p className="text-sm text-gray-600 mb-3">{item.description}</p>
                   <button
                     onClick={() => addToCart(item)}
-                    className="bg-red-900 hover:bg-red-800 text-white px-3 py-1 rounded text-sm transition-colors"
+                    className="bg-red-900 hover:bg-red-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all hover:shadow-lg transform hover:scale-105"
                   >
                     Add to Cart
                   </button>
