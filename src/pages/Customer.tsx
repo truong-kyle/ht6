@@ -1,7 +1,16 @@
-
-import React, { useState, useEffect, useRef } from 'react';
-import { MapPin, Search, ShoppingCart, Clock, DollarSign, Star, Phone, Navigation, CheckCircle } from 'lucide-react';
-import { calculatePricing } from '../services/dynamicPricing';
+import React, { useState, useEffect, useRef } from "react";
+import {
+  MapPin,
+  Search,
+  ShoppingCart,
+  Clock,
+  Star,
+  Phone,
+  Navigation,
+  CheckCircle,
+} from "lucide-react";
+import { calculatePricing } from "../services/dynamicPricing";
+import { set } from "vellum-ai/core/schemas";
 // Define interfaces for proper typing
 interface MenuItem {
   id: number;
@@ -17,7 +26,7 @@ interface Restaurant {
   category: string;
   rating: number;
   deliveryTime: string;
-  deliveryFee: number;
+
   image: string;
   location: { lat: number; lng: number };
   phone: string;
@@ -37,7 +46,7 @@ interface Carrier {
 
 interface OrderCosts {
   subtotal: number;
-  deliveryFee: number;
+
   weatherFee: number;
   serviceFee: number;
   tax: number;
@@ -63,15 +72,24 @@ const UserDashboard: React.FC = () => {
     useState<boolean>(false);
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
   // York University coordinates (4700 Keele St)
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number }>({ lat: 43.7735, lng: -79.5019 });
+  const [userLocation, setUserLocation] = useState<{
+    lat: number;
+    lng: number;
+  }>({ lat: 43.7735, lng: -79.5019 });
   const [mapLoading, setMapLoading] = useState<boolean>(true);
-  const [hoveredRestaurant, setHoveredRestaurant] = useState<number | null>(null);
+  const [hoveredRestaurant, setHoveredRestaurant] = useState<number | null>(
+    null
+  );
   const mapRef = useRef<HTMLDivElement>(null);
   const leafletMapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
+  const [buttonLoading, setButtonLoading] = useState<boolean>(false);
 
-  
-
+  const Spinner = () => (
+    <div className="flex items-center justify-center h-full">
+      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white " />
+    </div>
+  );
   // Restaurants around York University
   const restaurants: Restaurant[] = [
     {
@@ -80,7 +98,7 @@ const UserDashboard: React.FC = () => {
       category: "Fast Food",
       rating: 4.5,
       deliveryTime: "15-25 min",
-      deliveryFee: 2.99,
+
       image: "🍗",
       location: { lat: 43.7742, lng: -79.5028 },
       phone: "(416) 736-5000",
@@ -114,7 +132,7 @@ const UserDashboard: React.FC = () => {
       category: "Middle Eastern",
       rating: 4.2,
       deliveryTime: "20-30 min",
-      deliveryFee: 3.49,
+
       image: "🥙",
       location: { lat: 43.7728, lng: -79.5015 },
       phone: "(416) 736-5001",
@@ -148,7 +166,7 @@ const UserDashboard: React.FC = () => {
       category: "Mediterranean",
       rating: 4.7,
       deliveryTime: "25-35 min",
-      deliveryFee: 4.99,
+
       image: "🥗",
       location: { lat: 43.7748, lng: -79.5035 },
       phone: "(416) 736-5002",
@@ -182,7 +200,7 @@ const UserDashboard: React.FC = () => {
       category: "Thai",
       rating: 4.3,
       deliveryTime: "18-28 min",
-      deliveryFee: 2.49,
+
       image: "🍜",
       location: { lat: 43.7722, lng: -79.5008 },
       phone: "(416) 736-5003",
@@ -213,9 +231,24 @@ const UserDashboard: React.FC = () => {
   ];
 
   const carriers: Carrier[] = [
-    { id: 1, name: "Alex", location: { lat: 43.7738, lng: -79.5025 }, available: true },
-    { id: 2, name: "Sarah", location: { lat: 43.7745, lng: -79.5018 }, available: true },
-    { id: 3, name: "Mike", location: { lat: 43.7730, lng: -79.5032 }, available: true }
+    {
+      id: 1,
+      name: "Alex",
+      location: { lat: 43.7738, lng: -79.5025 },
+      available: true,
+    },
+    {
+      id: 2,
+      name: "Sarah",
+      location: { lat: 43.7745, lng: -79.5018 },
+      available: true,
+    },
+    {
+      id: 3,
+      name: "Mike",
+      location: { lat: 43.773, lng: -79.5032 },
+      available: true,
+    },
   ];
 
   const categories: string[] = [
@@ -227,9 +260,12 @@ const UserDashboard: React.FC = () => {
   ];
 
   // Filter restaurants based on search and category - MOVED UP BEFORE USE
-  const filteredRestaurants = restaurants.filter(restaurant => {
-    const matchesSearch = restaurant.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || restaurant.category === selectedCategory;
+  const filteredRestaurants = restaurants.filter((restaurant) => {
+    const matchesSearch = restaurant.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "All" || restaurant.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -237,19 +273,21 @@ const UserDashboard: React.FC = () => {
   const updateCarrierMarkers = () => {
     if (!leafletMapRef.current) return;
 
-    carriers.forEach(carrier => {
+    carriers.forEach((carrier) => {
       if (carrier.available) {
         const carrierIcon = (window as any).L.divIcon({
-          className: 'carrier-marker',
+          className: "carrier-marker",
           html: `<div style="background: #059669; border: 2px solid white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); animation: bounce 1s infinite;">
                    🚗
                    <div style="position: absolute; top: -30px; left: 50%; transform: translateX(-50%); background: #059669; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; white-space: nowrap;">${carrier.name}</div>
                  </div>`,
           iconSize: [24, 24],
-          iconAnchor: [12, 12]
+          iconAnchor: [12, 12],
         });
 
-        (window as any).L.marker([carrier.location.lat, carrier.location.lng], { icon: carrierIcon })
+        (window as any).L.marker([carrier.location.lat, carrier.location.lng], {
+          icon: carrierIcon,
+        })
           .addTo(leafletMapRef.current)
           .bindPopup(`<b>${carrier.name}</b><br>Available Carrier`);
       }
@@ -261,41 +299,51 @@ const UserDashboard: React.FC = () => {
     if (!leafletMapRef.current) return;
 
     // Clear existing restaurant markers
-    markersRef.current.forEach(marker => {
+    markersRef.current.forEach((marker) => {
       leafletMapRef.current.removeLayer(marker);
     });
     markersRef.current = [];
 
-    filteredRestaurants.forEach(restaurant => {
+    filteredRestaurants.forEach((restaurant) => {
       const isSelected = selectedRestaurant?.id === restaurant.id;
       const isHovered = hoveredRestaurant === restaurant.id;
-      
+
       const restaurantIcon = (window as any).L.divIcon({
-        className: 'restaurant-marker',
+        className: "restaurant-marker",
         html: `<div style="
-          background: ${isSelected ? '#dc2626' : 'white'}; 
-          border: 3px solid ${isSelected ? '#dc2626' : '#6b7280'}; 
-          width: ${isSelected || isHovered ? '48px' : '40px'}; 
-          height: ${isSelected || isHovered ? '48px' : '40px'}; 
+          background: ${isSelected ? "#dc2626" : "white"}; 
+          border: 3px solid ${isSelected ? "#dc2626" : "#6b7280"}; 
+          width: ${isSelected || isHovered ? "48px" : "40px"}; 
+          height: ${isSelected || isHovered ? "48px" : "40px"}; 
           border-radius: 50%; 
           display: flex; 
           align-items: center; 
           justify-content: center; 
-          font-size: ${isSelected || isHovered ? '20px' : '18px'}; 
+          font-size: ${isSelected || isHovered ? "20px" : "18px"}; 
           box-shadow: 0 4px 12px rgba(0,0,0,0.3); 
           cursor: pointer;
           transition: all 0.3s ease;
-          ${isSelected ? 'transform: scale(1.1);' : ''}
+          ${isSelected ? "transform: scale(1.1);" : ""}
         ">${restaurant.image}</div>`,
-        iconSize: [isSelected || isHovered ? 48 : 40, isSelected || isHovered ? 48 : 40],
-        iconAnchor: [isSelected || isHovered ? 24 : 20, isSelected || isHovered ? 24 : 20]
+        iconSize: [
+          isSelected || isHovered ? 48 : 40,
+          isSelected || isHovered ? 48 : 40,
+        ],
+        iconAnchor: [
+          isSelected || isHovered ? 24 : 20,
+          isSelected || isHovered ? 24 : 20,
+        ],
       });
 
-      const marker = (window as any).L.marker([restaurant.location.lat, restaurant.location.lng], { 
-        icon: restaurantIcon 
-      })
+      const marker = (window as any).L.marker(
+        [restaurant.location.lat, restaurant.location.lng],
+        {
+          icon: restaurantIcon,
+        }
+      )
         .addTo(leafletMapRef.current)
-        .bindPopup(`
+        .bindPopup(
+          `
           <div style="text-align: center; min-width: 200px;">
             <div style="font-size: 24px; margin-bottom: 8px;">${restaurant.image}</div>
             <h3 style="margin: 0 0 4px 0; font-weight: bold;">${restaurant.name}</h3>
@@ -304,12 +352,13 @@ const UserDashboard: React.FC = () => {
               <span>⭐ ${restaurant.rating}</span>
               <span>🕒 ${restaurant.deliveryTime}</span>
             </div>
-            <div style="color: #059669; font-weight: bold; font-size: 12px;">$${restaurant.deliveryFee} delivery fee</div>
+           
           </div>
-        `)
-        .on('click', () => handleRestaurantSelect(restaurant))
-        .on('mouseover', () => setHoveredRestaurant(restaurant.id))
-        .on('mouseout', () => setHoveredRestaurant(null));
+        `
+        )
+        .on("click", () => handleRestaurantSelect(restaurant))
+        .on("mouseover", () => setHoveredRestaurant(restaurant.id))
+        .on("mouseout", () => setHoveredRestaurant(null));
 
       markersRef.current.push(marker);
 
@@ -330,49 +379,60 @@ const UserDashboard: React.FC = () => {
     const initializeMap = async () => {
       try {
         // Load Leaflet CSS and JS
-        const linkElement = document.createElement('link');
-        linkElement.rel = 'stylesheet';
-        linkElement.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+        const linkElement = document.createElement("link");
+        linkElement.rel = "stylesheet";
+        linkElement.href =
+          "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css";
         document.head.appendChild(linkElement);
 
         // Wait for CSS to load
-        await new Promise(resolve => {
+        await new Promise((resolve) => {
           linkElement.onload = resolve;
         });
 
         // Load Leaflet JavaScript
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+        const script = document.createElement("script");
+        script.src =
+          "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js";
         document.body.appendChild(script);
 
         script.onload = () => {
           if (mapRef.current && !leafletMapRef.current) {
             // Initialize the map centered on York University
-            leafletMapRef.current = (window as any).L.map(mapRef.current).setView([43.7735, -79.5019], 15);
+            leafletMapRef.current = (window as any).L.map(
+              mapRef.current
+            ).setView([43.7735, -79.5019], 15);
 
             // Add OpenStreetMap tiles
-            (window as any).L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-              attribution: '© OpenStreetMap contributors',
-              maxZoom: 19
-            }).addTo(leafletMapRef.current);
+            (window as any).L.tileLayer(
+              "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+              {
+                attribution: "© OpenStreetMap contributors",
+                maxZoom: 19,
+              }
+            ).addTo(leafletMapRef.current);
 
             // Add user location marker
             const userIcon = (window as any).L.divIcon({
-              className: 'user-marker',
+              className: "user-marker",
               html: `<div style="background: #2563eb; border: 3px solid white; width: 20px; height: 20px; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.3); position: relative;">
                        <div style="position: absolute; top: -35px; left: 50%; transform: translateX(-50%); background: #2563eb; color: white; padding: 4px 8px; border-radius: 6px; font-size: 11px; white-space: nowrap; font-weight: bold;">4700 Keele St</div>
                      </div>`,
               iconSize: [20, 20],
-              iconAnchor: [10, 10]
+              iconAnchor: [10, 10],
             });
 
-            (window as any).L.marker([userLocation.lat, userLocation.lng], { icon: userIcon })
+            (window as any).L.marker([userLocation.lat, userLocation.lng], {
+              icon: userIcon,
+            })
               .addTo(leafletMapRef.current)
-              .bindPopup('<b>Your Location</b><br>4700 Keele Street<br>York University');
+              .bindPopup(
+                "<b>Your Location</b><br>4700 Keele Street<br>York University"
+              );
 
             // Add restaurant markers
             updateRestaurantMarkers();
-            
+
             // Add carrier markers
             updateCarrierMarkers();
 
@@ -380,7 +440,7 @@ const UserDashboard: React.FC = () => {
           }
         };
       } catch (error) {
-        console.error('Error loading Leaflet:', error);
+        console.error("Error loading Leaflet:", error);
         setMapLoading(false);
       }
     };
@@ -445,18 +505,22 @@ const UserDashboard: React.FC = () => {
       (sum, item) => sum + item.price * item.quantity,
       0
     );
-    const deliveryFee = restaurant.deliveryFee;
-    const weatherFee = await calculatePricing(calculateDistance(userLocation, restaurant.location));
+
+    //TODO: Replace with actual distance calculation
+    // const weatherFee = await calculatePricing(
+    //   calculateDistance(userLocation, restaurant.location)
+    // );
+    const weatherFee = 3; // Placeholder for weather fee calculation
     const serviceFee = subtotal * 0.05;
     const tax = (subtotal + serviceFee) * 0.13;
 
     return {
       subtotal,
-      deliveryFee,
+
       weatherFee,
       serviceFee,
       tax,
-      total: subtotal + deliveryFee + weatherFee + serviceFee + tax,
+      total: subtotal + weatherFee + serviceFee + tax,
     };
   };
 
@@ -492,25 +556,8 @@ const UserDashboard: React.FC = () => {
   };
 
   const confirmOrder = async (): Promise<void> => {
+    setButtonLoading(true);
     if (cart.length === 0 || !selectedRestaurant) return;
-
-    cart.forEach((item) => {
-        try {
-          fetch(`${import.meta.env.VITE_BACKEND_URL}/order/${item.productId}`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              productId: item.productId,
-              quantity: item.quantity
-            }),
-          });
-        } catch (error) {
-          console.error("Error confirming order:", error);
-        
-      }
-    });
 
     const { carrier, distance } = findNearestCarrier(
       selectedRestaurant.location
@@ -525,37 +572,80 @@ const UserDashboard: React.FC = () => {
       costs: orderTotal,
       estimatedTime: Math.ceil(distance * 2 + 15),
     };
-
     setOrderDetails(newOrderDetails);
-    setShowOrderConfirmation(true);
-  };
-
-  const placeOrder = (): void => {
-    alert("Order placed successfully! Your carrier will be notified.");
-    setCart([]);
-    setSelectedRestaurant(null);
-    setShowOrderConfirmation(false);
-    setOrderDetails(null);
-  };
-
-  const modifyOrder = async (): Promise<void> => {
-    setShowOrderConfirmation(false);
     try {
-      await fetch(`${import.meta.env.VITE_BACKEND_URL}/order/modify`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          items: cart,
-          restaurantId: selectedRestaurant?.id,
-        }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/create-checkout-session`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items: newOrderDetails.items.map((item) => ({
+              productId: item.productId,
+              quantity: item.quantity,
+              name: item.name,
+              price: item.price,
+            })),
+            fees: {
+              subtotal: newOrderDetails.costs.subtotal,
+              weatherFee: newOrderDetails.costs.weatherFee,
+              serviceFee: newOrderDetails.costs.serviceFee,
+              tax: newOrderDetails.costs.tax,
+              total: newOrderDetails.costs.total,
+            },
+            restaurantId: newOrderDetails.restaurant.id,
+            carrierId: newOrderDetails.carrier?.id,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Checkout session created:", data);
+
+        // Set order details and show confirmation
+        setOrderDetails(newOrderDetails);
+        setShowOrderConfirmation(true);
+      } else {
+        const errorData = await response.json();
+        console.error("Checkout session error:", errorData);
+        alert(
+          `Failed to create checkout session: ${
+            errorData.message || "Unknown error"
+          }`
+        );
+      }
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
+      alert("Network error. Please check your connection and try again.");
+    } finally {
+      setButtonLoading(false);
     }
-    catch (error) {
-      console.error("Error modifying order:", error);
-    }
-  }
+  };
+
+  const placeOrder = async (): Promise<void> => {
+    // try {
+    //   const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/create-checkout-session`, {
+    //     method: "POST",
+    //     headers: { "Content-Type": "application/json" },
+    //     body: JSON.stringify({
+    //       items: orderDetails?.items,
+    //       fees: orderDetails?.costs,
+    //     }),
+    //   });
+    //   if (response.ok) {
+    //     console.log(response.json());
+    //     alert("Order placed successfully! Your carrier will be notified.");
+    //     setCart([]);
+    //     setSelectedRestaurant(null);
+    //     setShowOrderConfirmation(false);
+    //     setOrderDetails(null);
+    //   }
+    // } catch (error) {
+    //   console.error("Error placing order:", error);
+    //   alert("Failed to place order. Please try again.");
+    // }
+  };
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -565,18 +655,19 @@ const UserDashboard: React.FC = () => {
           <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-red-50 to-blue-50 z-50">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-900 mx-auto mb-4"></div>
-              <p className="text-gray-600 text-lg mb-2">Loading York University Map...</p>
-              <p className="text-gray-500 text-sm">4700 Keele St, North York, ON</p>
+              <p className="text-gray-600 text-lg mb-2">
+                Loading York University Map...
+              </p>
+              <p className="text-gray-500 text-sm">
+                4700 Keele St, North York, ON
+              </p>
             </div>
           </div>
         ) : null}
-        
+
         {/* Map Container */}
-        <div 
-          ref={mapRef}
-          className="absolute inset-0 w-full h-full z-10"
-        />
-        
+        <div ref={mapRef} className="absolute inset-0 w-full h-full z-10" />
+
         {/* Search Bar */}
         <div className="absolute top-4 left-4 right-1/4 z-30">
           <div className="relative">
@@ -603,8 +694,8 @@ const UserDashboard: React.FC = () => {
                 onClick={() => setSelectedCategory(category)}
                 className={`px-4 py-2 rounded-full whitespace-nowrap transition-all font-medium ${
                   selectedCategory === category
-                    ? 'bg-red-900 text-white shadow-lg transform scale-105'
-                    : 'bg-white text-red-900 hover:bg-red-50 shadow-md hover:shadow-lg'
+                    ? "bg-red-900 text-white shadow-lg transform scale-105"
+                    : "bg-white text-red-900 hover:bg-red-50 shadow-md hover:shadow-lg"
                 }`}
               >
                 {category}
@@ -615,7 +706,9 @@ const UserDashboard: React.FC = () => {
 
         {/* Map Legend */}
         <div className="absolute bottom-4 left-4 bg-white rounded-xl shadow-2xl p-4 border border-gray-200 z-20">
-          <h4 className="font-semibold text-sm mb-3 text-gray-800">York University Area</h4>
+          <h4 className="font-semibold text-sm mb-3 text-gray-800">
+            York University Area
+          </h4>
           <div className="space-y-2 text-xs">
             <div className="flex items-center">
               <div className="w-4 h-4 bg-blue-600 rounded-full mr-3 border-2 border-white"></div>
@@ -643,7 +736,9 @@ const UserDashboard: React.FC = () => {
       <div className="w-96 bg-white shadow-2xl overflow-hidden flex flex-col">
         <div className="p-6 bg-gradient-to-br from-red-900 to-red-800 text-white">
           <h2 className="text-xl font-bold mb-2">York University Delivery</h2>
-          <p className="opacity-90 text-sm">{filteredRestaurants.length} restaurants near campus</p>
+          <p className="opacity-90 text-sm">
+            {filteredRestaurants.length} restaurants near campus
+          </p>
           <div className="flex items-center mt-2 text-sm opacity-75">
             <MapPin size={14} className="mr-1" />
             4700 Keele St Area
@@ -655,9 +750,9 @@ const UserDashboard: React.FC = () => {
             <div
               key={restaurant.id}
               className={`p-4 border-b cursor-pointer transition-all hover:bg-gray-50 ${
-                selectedRestaurant?.id === restaurant.id 
-                  ? 'bg-red-50 border-l-4 border-l-red-900 shadow-md' 
-                  : 'border-gray-200'
+                selectedRestaurant?.id === restaurant.id
+                  ? "bg-red-50 border-l-4 border-l-red-900 shadow-md"
+                  : "border-gray-200"
               }`}
               onClick={() => handleRestaurantSelect(restaurant)}
               onMouseEnter={() => setHoveredRestaurant(restaurant.id)}
@@ -667,8 +762,12 @@ const UserDashboard: React.FC = () => {
                 <div className="flex items-center">
                   <span className="text-2xl mr-3">{restaurant.image}</span>
                   <div>
-                    <h3 className="font-semibold text-gray-900">{restaurant.name}</h3>
-                    <p className="text-sm text-red-900 bg-red-100 px-2 py-1 rounded-full inline-block">{restaurant.category}</p>
+                    <h3 className="font-semibold text-gray-900">
+                      {restaurant.name}
+                    </h3>
+                    <p className="text-sm text-red-900 bg-red-100 px-2 py-1 rounded-full inline-block">
+                      {restaurant.category}
+                    </p>
                   </div>
                 </div>
                 <div className="text-right text-sm">
@@ -684,15 +783,14 @@ const UserDashboard: React.FC = () => {
                   <Clock size={14} className="mr-1 text-blue-500" />
                   <span>{restaurant.deliveryTime}</span>
                 </div>
-                <div className="flex items-center">
-                  <DollarSign size={14} className="mr-1 text-green-500" />
-                  <span>${restaurant.deliveryFee} delivery</span>
-                </div>
+                <div className="flex items-center"></div>
               </div>
-              
+
               {selectedRestaurant?.id === restaurant.id && (
                 <div className="mt-3 p-2 bg-red-100 rounded-lg">
-                  <p className="text-xs text-red-800 font-medium">📍 Selected for delivery to York University</p>
+                  <p className="text-xs text-red-800 font-medium">
+                    📍 Selected for delivery to York University
+                  </p>
                 </div>
               )}
             </div>
@@ -707,14 +805,21 @@ const UserDashboard: React.FC = () => {
                 <ShoppingCart size={20} className="mr-2" />
                 Menu - {selectedRestaurant.name}
               </h3>
-              
-              {selectedRestaurant.menu.map(item => (
-                <div key={item.id} className="bg-white rounded-lg p-3 mb-3 shadow-sm border border-red-100">
+
+              {selectedRestaurant.menu.map((item) => (
+                <div
+                  key={item.id}
+                  className="bg-white rounded-lg p-3 mb-3 shadow-sm border border-red-100"
+                >
                   <div className="flex justify-between items-start mb-1">
                     <h4 className="font-medium text-gray-900">{item.name}</h4>
-                    <span className="font-bold text-red-900">${item.price}</span>
+                    <span className="font-bold text-red-900">
+                      ${item.price}
+                    </span>
                   </div>
-                  <p className="text-sm text-gray-600 mb-3">{item.description}</p>
+                  <p className="text-sm text-gray-600 mb-3">
+                    {item.description}
+                  </p>
                   <button
                     onClick={() => addToCart(item)}
                     className="bg-red-900 hover:bg-red-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all hover:shadow-lg transform hover:scale-105"
@@ -769,7 +874,7 @@ const UserDashboard: React.FC = () => {
               onClick={confirmOrder}
               className="w-full bg-red-900 hover:bg-red-800 text-white py-3 rounded-lg font-medium transition-colors"
             >
-              Review Order
+              {buttonLoading ? <Spinner /> : "Review Order"}
             </button>
           </div>
         )}
@@ -848,10 +953,7 @@ const UserDashboard: React.FC = () => {
                     <span>Subtotal</span>
                     <span>${orderDetails.costs.subtotal.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Delivery Fee</span>
-                    <span>${orderDetails.costs.deliveryFee.toFixed(2)}</span>
-                  </div>
+
                   {orderDetails.costs.weatherFee > 0 && (
                     <div className="flex justify-between text-orange-600">
                       <span>Weather Fee</span>
@@ -878,7 +980,7 @@ const UserDashboard: React.FC = () => {
               {/* Action Buttons */}
               <div className="flex gap-3">
                 <button
-                  onClick={modifyOrder}
+                  onClick={() => setShowOrderConfirmation(false)}
                   className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors"
                 >
                   Cancel
@@ -887,7 +989,7 @@ const UserDashboard: React.FC = () => {
                   onClick={placeOrder}
                   className="flex-1 bg-red-900 hover:bg-red-800 text-white py-3 rounded-lg font-medium transition-colors"
                 >
-                  Place Order
+                  {buttonLoading ? <Spinner /> : "Place Order"}
                 </button>
               </div>
             </div>
