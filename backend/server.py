@@ -3,6 +3,7 @@ from dotenv import load_dotenv, find_dotenv
 from flask import Flask, jsonify, redirect, request
 import stripe
 from pathlib import Path
+from flask_cors import CORS
 
 load_dotenv(find_dotenv(usecwd=True))
 
@@ -10,6 +11,7 @@ stripe.api_key = os.getenv("STRIPE_SECRET")
 stripe.api_version = '2025-06-30.basil'
 
 app = Flask(__name__, static_url_path="", static_folder="public")
+CORS(app)
 domain = "http://localhost:5173"
 
 @app.route('/start-checkout', methods=['POST'])
@@ -17,7 +19,7 @@ def start_checkout():
     try:
         session = stripe.checkout.Session.create(
             ui_mode='custom', line_items= [{
-                'price': '{{PRICE_ID}}',
+                'price': 'price_1RmamGD6lYpXbkKW1c3RuDR4',
                 'quantity': 1
             }], mode='payment', return_url=domain + '/complete?session_id={CHECKOUT_SESSION_ID}',
         )
