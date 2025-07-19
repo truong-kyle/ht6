@@ -233,8 +233,10 @@
 /* Custom responsive breakpoints (if needed) */
 @media (min-width: 1920px) {
   #root {
-    @apply max-w-screen-2xl;
+    @apply w-screen h-screen bg-[#7a1212] flex items-center justify-center;
+    /* DO NOT add mx-auto, max-w-*, or p-* here */
   }
+  
 }
 
 /* Tailwind component examples for your pages */
@@ -292,49 +294,4 @@
 .nav-link {
   @apply block py-2 px-4 rounded-lg transition-colors duration-200
          hover:bg-white/20 md:py-1 md:px-2;
-}
-
-@keyframes slide-up {
-  0% {
-    transform: translateY(40px);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes fade-in {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-.animate-slide-up {
-  animation: slide-up 0.6s ease-out forwards;
-}
-
-.animate-fade-in {
-  animation: fade-in 1s ease-out forwards;
-}
-
-.box {
-  background-color: white;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  text-align: center;
-  max-width: 400px;
-  margin: 0 auto;
-}
-
-html, body, #root {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
 }
