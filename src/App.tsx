@@ -89,7 +89,7 @@ export default function CampusCourierLanding() {
   ];
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-gray-50 via-white to-red-50/30 relative">
+    <div className="min-h-screen w-screen bg-gradient-to-br from-gray-50 via-white to-red-50/30 relative overflow-x-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-64 h-64 bg-gradient-to-r from-red-900 to-red-700 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse"></div>
