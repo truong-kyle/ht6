@@ -39,7 +39,7 @@ function AppRouter() {
       
       {/* Auth routes - redirect to dashboard if already signed in */}
       <Route 
-        path="/login" 
+        path="/login/*" 
         element={isSignedIn ? <Navigate to="/dashboard" replace /> : <Login />} 
       />
 
@@ -91,7 +91,7 @@ function AppRouter() {
       />
 
       {/* Catch all route - redirect to home */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
     </Routes>
   );
 }

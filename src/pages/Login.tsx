@@ -33,7 +33,8 @@ export default function Login() {
           <SignIn 
             routing="path" 
             path="/login"
-            afterSignInUrl="/dashboard"
+            signInUrl="/dashboard"
+            signUpUrl="/login"
             appearance={{
               elements: {
                 rootBox: "mx-auto",
