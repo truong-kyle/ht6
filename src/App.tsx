@@ -2,7 +2,11 @@ import { useState, useEffect } from "react";
 // CHANGE: Added useNavigate import for React Router navigation
 import { useNavigate } from "react-router-dom";
 import { MapPin, Clock, DollarSign, Shield, Users, Truck, CloudRain, Route, Star } from "lucide-react";
+import { testWeatherOutput} from "./services/weatherService";
+import { checkIncentive } from "./services/checkIncentives";
 
+testWeatherOutput()
+checkIncentive()
 export default function CampusCourierLanding() {
   const [isVisible, setIsVisible] = useState(false);
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);

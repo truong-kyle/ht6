@@ -1,6 +1,10 @@
 // Execute Workflow (POST /v1/execute-workflow)
+import { getNextHourWeather } from "./weatherService";
 
-export async function checkIncentive() {
+let currentWeather = await getNextHourWeather();
+
+
+export async function checkIncentive() {       //USE THIS TO SHOW INCENTIVE, however, you can also use the dynamic pricing
   const response = await fetch("https://predict.vellum.ai/v1/execute-workflow", {
     method: "POST",
     headers: {
@@ -17,12 +21,12 @@ export async function checkIncentive() {
         {
           "name": "Time of day",
           "type": "STRING",
-          "value": "Afternoon"
+          "value": new Date().getHours() < 12 ? "Morning" : new Date().getHours() < 18 ? "Afternoon" : "Evening"
         },
         {
           "name": "Temperature",
           "type": "STRING",
-          "value": "25 C"
+          "value": currentWeather?.temperature2m || "22"
         },
         {
           "name": "Demand",

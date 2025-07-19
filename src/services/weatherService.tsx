@@ -54,8 +54,6 @@ export async function getNextHourWeather(): Promise<HourlyWeatherData> {
 
 
 
-
-
 // Test function to see the output
 export async function testWeatherOutput() {
 	try {
