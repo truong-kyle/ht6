@@ -8,30 +8,24 @@ from flask_cors import CORS
 load_dotenv(find_dotenv(usecwd=True))
 
 stripe.api_key = os.getenv("STRIPE_SECRET")
-stripe.api_version = '2025-06-30.basil'
 
 app = Flask(__name__, static_url_path="", static_folder="public")
 CORS(app)
 domain = "http://localhost:5173"
 
-@app.route('/start-checkout', methods=['POST'])
-def start_checkout():
-    try:
-        session = stripe.checkout.Session.create(
-            ui_mode='custom', line_items= [{
-                'price': 'price_1RmamGD6lYpXbkKW1c3RuDR4',
-                'quantity': 1
-            }], mode='payment', return_url=domain + '/complete?session_id={CHECKOUT_SESSION_ID}',
-        )
-    except Exception as e:
-        return str(e)
-    return jsonify(clientSecret = session.client_secret)
+cart = []
 
-@app.route('/session-status', methods=['GET'])
-def session_status():
-  session = stripe.checkout.Session.retrieve(request.args.get('session_id'), expand=["payment_intent"])
+@app.route('/order/<path:item_id>', methods=['POST'])
+def add_item(item_id):
+    item_details = request.json
+    print(item_details)
+    return jsonify(success=True, item=item_details, item_id=item_id)
 
-  return jsonify(status=session.status, payment_status=session.payment_status, payment_intent_id=session.payment_intent.id, payment_intent_status=session.payment_intent.status)
+@app.route('/order/modify', methods=['POST'])
+def modify_order():
+    global cart
+    cart = []
+    return jsonify(success=True, message="Backend cart cleared")
 
 if __name__ == '__main__':
     app.run(port=4242)
