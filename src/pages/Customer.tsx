@@ -7,6 +7,7 @@ import {
   Star,
   CheckCircle,
   CreditCard,
+  House,
 } from "lucide-react";
 import { calculatePricing } from "../services/dynamicPricing";
 import { set } from "vellum-ai/core/schemas";
@@ -17,7 +18,7 @@ import {
   EmbeddedCheckoutProvider,
   PaymentElement,
 } from "@stripe/react-stripe-js";
-import { BrowserRouter, Routes } from "react-router-dom";
+import { BrowserRouter, Link, Routes } from "react-router-dom";
 import { loadStripe } from "@stripe/stripe-js";
 // Define interfaces for proper typing
 interface MenuItem {
@@ -669,7 +670,7 @@ const UserDashboard: React.FC = () => {
         <div ref={mapRef} className="absolute inset-0 w-full h-full z-10" />
 
         {/* Search Bar */}
-        <div className="absolute top-4 left-4 right-1/4 z-30">
+        <div className="absolute top-4 left-1/12 right-1/4 z-30">
           <div className="relative">
             <Search
               className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
@@ -734,7 +735,11 @@ const UserDashboard: React.FC = () => {
 
       {/* Right Side - Restaurant List */}
       <div className="w-96 bg-white shadow-2xl overflow-hidden flex flex-col">
+        
         <div className="p-6 bg-gradient-to-br from-red-900 to-red-800 text-white">
+          <Link to="/">
+            <House className="top-3 -translate-x-3 absolute" />
+          </Link>
           <h2 className="text-xl font-bold mb-2">York University Delivery</h2>
           <p className="opacity-90 text-sm">
             {filteredRestaurants.length} restaurants near campus
@@ -799,7 +804,7 @@ const UserDashboard: React.FC = () => {
 
         {/* Selected Restaurant Menu */}
         {selectedRestaurant && (
-          <div className="max-h-80 border-t-2 border-red-200 overflow-y-auto bg-red-50">
+          <div className="max-h-80 border-t-2 border-red-200 overflow-y-auto bg-red-50 shadow-2xl shadow-black rounded-t-2xl">
             <div className="p-4">
               <h3 className="font-bold text-lg mb-3 flex items-center text-red-900">
                 <ShoppingCart size={20} className="mr-2" />

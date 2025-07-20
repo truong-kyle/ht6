@@ -40,7 +40,7 @@ export default function Welcome() {
       {/* Main Content */}
       <div className="mt-22 z-20 text-center animate-slide-up">
         <h1 className="text-6xl md:text-8xl font-extrabold text-white drop-shadow-2xl mb-4">
-          Welcome to Campus Courier
+          Welcome to DormDash
         </h1>
         <p className="text-lg md:text-2xl text-white/90 italic mt-2 animate-slide-up-delay-200">
           Order food. Fast delivery. Connect with your campus.

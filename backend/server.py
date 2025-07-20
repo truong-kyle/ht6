@@ -67,7 +67,11 @@ def create_checkout_session():
         # Log the session object for debugging
         print("Checkout session created:", session)
         
-       
+        # Decode the client secret if it's URL encoded
+        client_secret = session.client_secret
+        if client_secret and '%' in client_secret:
+            client_secret = unquote(client_secret)
+            print(f"Decoded client secret: {client_secret}")
 
         return jsonify(
             clientSecret=client_secret, 
@@ -92,7 +96,7 @@ def create_payment_intent():
         for fee_name, fee_amount in fees.items():
             fee_item = {
                 'name': fee_name.replace('_', ' ').title(),
-                'description': f'{fee_name.replace("_", " ").title()}',
+                'description': f'{fee_name.replace("_", " ").title()}=',
                 'price': fee_amount,
                 'quantity': 1,
                 'is_fee': True  # Optional: flag to identify fees

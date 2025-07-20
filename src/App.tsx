@@ -236,7 +236,7 @@ export default function CampusCourierLanding() {
         <main className="w-full max-w-7xl mx-auto px-4 py-12 relative z-10">
           <div className={`text-center mb-16 transition-all duration-1000 delay-300 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
             <h1 className="text-6xl font-extrabold text-gray-900 mb-6 bg-gradient-to-r from-gray-900 via-red-900/80 to-red-700 bg-clip-text text-transparent">
-              Dorm <span className="bg-gradient-to-r from-red-700 to-red-600 bg-clip-text text-transparent">Dash</span>
+              Dorm<span className="bg-gradient-to-r from-red-700 to-red-600 bg-clip-text text-transparent">Dash</span>
             </h1>
             <p className="text-xl text-gray-600 mb-6 max-w-3xl mx-auto">
               Smart, fast, and reliable food delivery for university students. Weather-aware pricing, 

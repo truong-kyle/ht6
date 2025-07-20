@@ -1,7 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
-import { Car, Users, ShoppingBag, Clock, DollarSign, Shield, MapPin, Star } from "lucide-react";
+import {
+  Car,
+  Users,
+  ShoppingBag,
+  Clock,
+  DollarSign,
+  Shield,
+  MapPin,
+  Star,
+} from "lucide-react";
 
 export default function Choose() {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
@@ -9,15 +18,15 @@ export default function Choose() {
   const { user, isLoaded } = useUser();
 
   const handleOrderClick = () => {
-    navigate('/customer');
+    navigate("/customer");
   };
 
   const handleCarrierClick = () => {
-    navigate('/courier');
+    navigate("/courier");
   };
 
   const handleBackClick = () => {
-    navigate('/'); // Navigate back to App.tsx (root route)
+    navigate("/"); // Navigate back to App.tsx (root route)
   };
 
   // Show loading state while user data is being fetched
@@ -48,19 +57,24 @@ export default function Choose() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3 group">
-              <button onClick={handleBackClick} className="flex items-center space-x-3">
-              <div className="transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
-  <div className="w-12 h-12 rounded-xl shadow-lg animate-wiggle overflow-hidden">
-    <img
-      src="DormDash.png"
-      alt="DormDash Logo"
-      className="w-full h-full object-cover"
-    />
-  </div>
-</div>
+              <button
+                onClick={handleBackClick}
+                className="flex items-center space-x-3"
+              >
+                <div className="transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
+                  <div className="w-12 h-12 rounded-xl shadow-lg animate-wiggle overflow-hidden">
+                    <img
+                      src="DormDash.png"
+                      alt="DormDash Logo"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
 
                 <div className="flex flex-col">
-                  <span className="text-xl font-bold text-gray-900">DormDash</span>
+                  <span className="text-xl font-bold text-gray-900">
+                    DormDash
+                  </span>
                   <span className="px-2 py-0.5 bg-gradient-to-r from-red-600 to-red-700 text-white text-xs font-medium rounded-full shadow-sm animate-glow">
                     Fast & Smart
                   </span>
@@ -73,9 +87,9 @@ export default function Choose() {
               </span>
               <div className="w-8 h-8 rounded-full overflow-hidden bg-red-100 flex items-center justify-center">
                 {user?.imageUrl ? (
-                  <img 
-                    src={user.imageUrl} 
-                    alt={user?.firstName || "User"} 
+                  <img
+                    src={user.imageUrl}
+                    alt={user?.firstName || "User"}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -88,6 +102,17 @@ export default function Choose() {
       </header>
 
       {/* Main Content */}
+          <div className="text-center mt-12 absolute top-12 left-5 ">
+            <button
+              onClick={handleBackClick}
+              className="text-red-700 hover:text-red-800 font-medium transition-all duration-300 inline-flex items-center group hover:scale-105 animate-fade-in hover:cursor-pointer"
+            >
+              <span className="transform transition-transform duration-300 group-hover:-translate-x-2 group-hover:scale-125">
+                ←
+              </span>
+              <span className="ml-2">Back to Home</span>
+            </button>
+          </div>
       <main className="max-w-4xl mx-auto px-4 py-12 relative z-10">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-extrabold text-gray-900 mb-4 bg-gradient-to-r from-gray-900 via-red-900/80 to-red-700 bg-clip-text text-transparent animate-text-glow">
@@ -100,9 +125,11 @@ export default function Choose() {
 
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {/* Customer Card */}
-          <div 
-            className={`bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-500 border border-gray-100/50 transform hover:scale-105 hover:-rotate-2 group cursor-pointer ${hoveredCard === 'customer' ? 'animate-pulse-glow' : ''}`}
-            onMouseEnter={() => setHoveredCard('customer')}
+          <div
+            className={`bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-500 border border-gray-100/50 transform hover:scale-105 hover:-rotate-2 group cursor-pointer ${
+              hoveredCard === "customer" ? "animate-pulse-glow" : ""
+            }`}
+            onMouseEnter={() => setHoveredCard("customer")}
             onMouseLeave={() => setHoveredCard(null)}
             onClick={handleOrderClick}
           >
@@ -110,15 +137,16 @@ export default function Choose() {
               <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6 transform transition-all duration-500 group-hover:scale-125 group-hover:rotate-180 shadow-lg animate-bob">
                 <ShoppingBag className="w-10 h-10 text-red-700" />
               </div>
-              
+
               <h2 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-red-800 transition-colors duration-300">
                 Order Food
               </h2>
-              
+
               <p className="text-gray-600 mb-6 group-hover:text-gray-800 transition-colors duration-300">
-                Get your favorite campus meals delivered quickly and affordably by verified student carriers.
+                Get your favorite campus meals delivered quickly and affordably
+                by verified student carriers.
               </p>
-              
+
               <ul className="text-left space-y-3 mb-8 text-gray-600">
                 <li className="flex items-center transform transition-all duration-300 hover:translate-x-3 hover:scale-105">
                   <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center mr-3 animate-spin-slow">
@@ -151,8 +179,8 @@ export default function Choose() {
                   5-star rated service
                 </li>
               </ul>
-              
-              <button 
+
+              <button
                 onClick={handleOrderClick}
                 className="w-full bg-red-900 text-white py-4 px-6 rounded-lg font-semibold hover:bg-red-800 transition-all duration-300 transform hover:scale-105 hover:shadow-lg inline-flex items-center justify-center group animate-button-glow"
               >
@@ -163,30 +191,32 @@ export default function Choose() {
           </div>
 
           {/* Carrier Card */}
-          <div 
-            className={`bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-500 border border-gray-100/50 transform hover:scale-105 hover:rotate-2 group cursor-pointer ${hoveredCard === 'carrier' ? 'animate-pulse-glow' : ''}`}
-            onMouseEnter={() => setHoveredCard('carrier')}
+          <div
+            className={`bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-500 border border-gray-100/50 transform hover:scale-105 hover:rotate-2 group cursor-pointer ${
+              hoveredCard === "carrier" ? "animate-pulse-glow" : ""
+            }`}
+            onMouseEnter={() => setHoveredCard("carrier")}
             onMouseLeave={() => setHoveredCard(null)}
             onClick={handleCarrierClick}
           >
             <div className="text-center">
               <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 transform transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 shadow-lg animate-drive">
-              <img
-  src="boxes.png"
-  alt="Carrier Icon"
-  className="w-10 h-10 object-contain"
-/>
-
+                <img
+                  src="boxes.png"
+                  alt="Carrier Icon"
+                  className="w-10 h-10 object-contain"
+                />
               </div>
-              
+
               <h2 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-blue-800 transition-colors duration-300">
                 Become a Carrier
               </h2>
-              
+
               <p className="text-gray-600 mb-6 group-hover:text-gray-800 transition-colors duration-300">
-                Earn money delivering food to fellow students with flexible schedules and optimized routes.
+                Earn money delivering food to fellow students with flexible
+                schedules and optimized routes.
               </p>
-              
+
               <ul className="text-left space-y-3 mb-8 text-gray-600">
                 <li className="flex items-center transform transition-all duration-300 hover:translate-x-3 hover:scale-105">
                   <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center mr-3 animate-bounce-coin">
@@ -219,12 +249,11 @@ export default function Choose() {
                   Secure payments & support
                 </li>
               </ul>
-              
-              <button 
+
+              <button
                 onClick={handleCarrierClick}
                 className="w-full bg-blue-600 text-white py-4 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 hover:shadow-lg inline-flex items-center justify-center group animate-button-glow"
               >
-                
                 Start Delivering
               </button>
             </div>
@@ -237,9 +266,11 @@ export default function Choose() {
           <div className="absolute inset-0 bg-gradient-to-r from-red-800 to-red-600 opacity-20">
             <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white to-transparent opacity-10 transform -skew-x-12 animate-slide"></div>
           </div>
-          
+
           <div className="relative z-10">
-            <h3 className="text-2xl font-bold mb-6 animate-fade-in">Join Our Growing Community</h3>
+            <h3 className="text-2xl font-bold mb-6 animate-fade-in">
+              Join Our Growing Community
+            </h3>
             <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto">
               <div className="transform transition-all duration-500 hover:scale-110 animate-count-up">
                 <div className="text-3xl font-bold mb-2">500+</div>
@@ -256,21 +287,11 @@ export default function Choose() {
             </div>
           </div>
         </div>
-
-        {/* Back to Home */}
-        <div className="text-center mt-12">
-          <button 
-            onClick={handleBackClick}
-            className="text-red-700 hover:text-red-800 font-medium transition-all duration-300 inline-flex items-center group hover:scale-105 animate-fade-in"
-          >
-            <span className="transform transition-transform duration-300 group-hover:-translate-x-2 group-hover:scale-125">←</span>
-            <span className="ml-2">Back to Home</span>
-          </button>
-        </div>
       </main>
 
-      <style dangerouslySetInnerHTML={{
-        __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         @keyframes float {
           0%, 100% { transform: translateY(0px) rotate(0deg); }
           50% { transform: translateY(-20px) rotate(180deg); }
@@ -469,8 +490,9 @@ export default function Choose() {
         .animate-fade-in {
           animation: fade-in 1.5s ease-out;
         }
-        `
-      }}></style>
+        `,
+        }}
+      ></style>
     </div>
   );
 }
