@@ -11,7 +11,8 @@
 
 ## Environment Variables
 Paste these into a `.env` file:
-`STRIPE_SECRET_KEY=your_stripe_secret_key
+```
+STRIPE_SECRET_KEY=your_stripe_secret_key
 VITE_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
 VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
 VITE_SUPABASE_URL=your_supabase_url
@@ -19,4 +20,5 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 VITE_BACKEND_URL=your_backend_url
 VITE_VELLUM_API_KEY=your_vellum_api_key
 FRONTEND_URL=your_frontend_url
-VITE_VELLUM_WORKFLOW=your_vellum_workflow`
+VITE_VELLUM_WORKFLOW=your_vellum_workflow
+```
