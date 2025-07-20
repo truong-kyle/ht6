@@ -8,6 +8,7 @@ import {
   CheckCircle,
   CreditCard,
   House,
+  X,
 } from "lucide-react";
 import { calculatePricing } from "../services/dynamicPricing";
 import { set } from "vellum-ai/core/schemas";
@@ -805,11 +806,16 @@ const UserDashboard: React.FC = () => {
         {selectedRestaurant && (
           <div className="max-h-80 border-t-2 border-red-200 overflow-y-auto bg-red-50 shadow-2xl shadow-black rounded-t-2xl">
             <div className="p-4">
-              <h3 className="font-bold text-lg mb-3 flex items-center text-red-900">
-                <ShoppingCart size={20} className="mr-2" />
-                Menu - {selectedRestaurant.name}
-              </h3>
-
+              <div className="relative mb-4">
+                <h3 className="font-bold text-lg mb-3 flex items-center text-red-900">
+                  <ShoppingCart size={20} className="mr-2" />
+                  Menu - {selectedRestaurant.name}
+                  <X
+                    onClick={() => setSelectedRestaurant(null)}
+                    className="absolute right-3 hover:cursor-pointer"
+                  />
+                </h3>
+              </div>
               {selectedRestaurant.menu.map((item) => (
                 <div
                   key={item.id}
