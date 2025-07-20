@@ -5,12 +5,20 @@ import {
   ShoppingCart,
   Clock,
   Star,
-  Phone,
-  Navigation,
   CheckCircle,
+  CreditCard,
 } from "lucide-react";
 import { calculatePricing } from "../services/dynamicPricing";
 import { set } from "vellum-ai/core/schemas";
+import {
+  CheckoutProvider,
+  Elements,
+  EmbeddedCheckout,
+  EmbeddedCheckoutProvider,
+  PaymentElement,
+} from "@stripe/react-stripe-js";
+import { BrowserRouter, Routes } from "react-router-dom";
+import { loadStripe } from "@stripe/stripe-js";
 // Define interfaces for proper typing
 interface MenuItem {
   id: number;
@@ -84,6 +92,10 @@ const UserDashboard: React.FC = () => {
   const leafletMapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
   const [buttonLoading, setButtonLoading] = useState<boolean>(false);
+  const [payment, setPayment] = useState<boolean>(false);
+  const [paid, setPaid] = useState<boolean>(false);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
   const Spinner = () => (
     <div className="flex items-center justify-center h-full">
@@ -507,10 +519,10 @@ const UserDashboard: React.FC = () => {
     );
 
     //TODO: Replace with actual distance calculation
-    // const weatherFee = await calculatePricing(
-    //   calculateDistance(userLocation, restaurant.location)
-    // );
-    const weatherFee = 3; // Placeholder for weather fee calculation
+    const weatherFee = await calculatePricing(
+      calculateDistance(userLocation, restaurant.location)
+    );
+    // const weatherFee = 3; // Placeholder for weather fee calculation
     const serviceFee = subtotal * 0.05;
     const tax = (subtotal + serviceFee) * 0.13;
 
@@ -522,6 +534,78 @@ const UserDashboard: React.FC = () => {
       tax,
       total: subtotal + weatherFee + serviceFee + tax,
     };
+  };
+
+  const creditCard = async () => {
+    setButtonLoading(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/create-checkout-session`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items: cart.map((item) => ({
+              productId: item.productId,
+              quantity: item.quantity,
+              name: item.name,
+              price: item.price,
+            })),
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error || `HTTP ${response.status}: ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+      console.log("Checkout session response:", data);
+
+      // Check if we have the client secret
+      if (!data.clientSecret) {
+        throw new Error("Client secret not received from server");
+      }
+
+      setClientSecret(data.clientSecret);
+      setPayment(true);
+      console.log("Checkout session created successfully");
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
+
+      // More specific error messages
+      if (error.message.includes("fetch")) {
+        alert("Network error. Please check your connection and try again.");
+      } else {
+        alert(`Failed to create checkout session: ${error.message}`);
+      }
+    } finally {
+      setButtonLoading(false);
+    }
+  };
+
+  // If you still need session status checking (for other purposes), here's the corrected version:
+  const checkSessionStatus = async (sessionId) => {
+    try {
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }/session-status?sessionId=${sessionId}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error checking session status:", error);
+      throw error;
+    }
   };
 
   const addToCart = async (item: MenuItem): Promise<void> => {
@@ -556,6 +640,7 @@ const UserDashboard: React.FC = () => {
   };
 
   const confirmOrder = async (): Promise<void> => {
+    setPayment(false);
     setButtonLoading(true);
     if (cart.length === 0 || !selectedRestaurant) return;
 
@@ -573,54 +658,55 @@ const UserDashboard: React.FC = () => {
       estimatedTime: Math.ceil(distance * 2 + 15),
     };
     setOrderDetails(newOrderDetails);
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/create-checkout-session`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            items: newOrderDetails.items.map((item) => ({
-              productId: item.productId,
-              quantity: item.quantity,
-              name: item.name,
-              price: item.price,
-            })),
-            fees: {
-              subtotal: newOrderDetails.costs.subtotal,
-              weatherFee: newOrderDetails.costs.weatherFee,
-              serviceFee: newOrderDetails.costs.serviceFee,
-              tax: newOrderDetails.costs.tax,
-              total: newOrderDetails.costs.total,
-            },
-            restaurantId: newOrderDetails.restaurant.id,
-            carrierId: newOrderDetails.carrier?.id,
-          }),
-        }
-      );
+    setShowOrderConfirmation(true);
+    setButtonLoading(false);
+    // try {
+    //   const response = await fetch(
+    //     `${import.meta.env.VITE_BACKEND_URL}/create-checkout-session`,
+    //     {
+    //       method: "POST",
+    //       headers: { "Content-Type": "application/json" },
+    //       body: JSON.stringify({
+    //         items: newOrderDetails.items.map((item) => ({
+    //           productId: item.productId,
+    //           quantity: item.quantity,
+    //           name: item.name,
+    //           price: item.price,
+    //         })),
+    //         fees: {
+    //           subtotal: newOrderDetails.costs.subtotal,
+    //           weatherFee: newOrderDetails.costs.weatherFee,
+    //           serviceFee: newOrderDetails.costs.serviceFee,
+    //           tax: newOrderDetails.costs.tax,
+    //           total: newOrderDetails.costs.total,
+    //         },
+    //         restaurantId: newOrderDetails.restaurant.id,
+    //         carrierId: newOrderDetails.carrier?.id,
+    //       }),
+    //     }
+    //   );
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Checkout session created:", data);
+    //   if (response.ok) {
+    //     const data = await response.json();
+    //     console.log("Checkout session created:", data);
 
-        // Set order details and show confirmation
-        setOrderDetails(newOrderDetails);
-        setShowOrderConfirmation(true);
-      } else {
-        const errorData = await response.json();
-        console.error("Checkout session error:", errorData);
-        alert(
-          `Failed to create checkout session: ${
-            errorData.message || "Unknown error"
-          }`
-        );
-      }
-    } catch (error) {
-      console.error("Error creating checkout session:", error);
-      alert("Network error. Please check your connection and try again.");
-    } finally {
-      setButtonLoading(false);
-    }
+    //     // Set order details and show confirmation
+    //     setOrderDetails(newOrderDetails);
+    //     setShowOrderConfirmation(true);
+    //   } else {
+    //     const errorData = await response.json();
+    //     console.error("Checkout session error:", errorData);
+    //     alert(
+    //       `Failed to create checkout session: ${
+    //         errorData.message || "Unknown error"
+    //       }`
+    //     );
+    //   }
+    // } catch (error) {
+    //   console.error("Error creating checkout session:", error);
+    //   alert("Network error. Please check your connection and try again.");
+    // } finally {
+    // setButtonLoading(false);
   };
 
   const placeOrder = async (): Promise<void> => {
@@ -646,6 +732,11 @@ const UserDashboard: React.FC = () => {
     //   alert("Failed to place order. Please try again.");
     // }
   };
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>): void {
+    throw new Error("Function not implemented.");
+  }
+  const options = clientSecret ? { clientSecret } : undefined;
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -882,44 +973,34 @@ const UserDashboard: React.FC = () => {
 
       {/* Order Confirmation Modal */}
       {showOrderConfirmation && orderDetails && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/55 bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="text-center mb-6">
-                <CheckCircle size={48} className="mx-auto mb-3 text-red-900" />
-                <h2 className="text-2xl font-bold text-gray-900">
-                  Order Confirmation
-                </h2>
-              </div>
-
-              {/* Restaurant Info */}
-              <div className="bg-blue-50 rounded-lg p-4 mb-4">
-                <div className="flex items-center mb-2">
-                  <span className="text-2xl mr-3">
-                    {orderDetails.restaurant.image}
-                  </span>
-                  <div>
-                    <h3 className="font-bold">
-                      {orderDetails.restaurant.name}
-                    </h3>
-                    <p className="text-sm text-red-900">
-                      {orderDetails.restaurant.category}
-                    </p>
-                  </div>
+            {!payment ? (
+              <div className="p-6">
+                <div className="text-center mb-6">
+                  <CheckCircle
+                    size={48}
+                    className="mx-auto mb-3 text-red-900"
+                  />
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Order Confirmation
+                  </h2>
                 </div>
-              </div>
 
-              {/* Carrier Info */}
-              <div className="bg-blue-50 rounded-lg p-4 mb-4 border-l-4 border-red-900">
-                <h4 className="font-medium mb-2 text-red-900">Your Carrier</h4>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">
-                      {orderDetails.carrier?.name || "No carrier available"}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Distance: {orderDetails.distance} km
-                    </p>
+                {/* Restaurant Info */}
+                <div className="bg-blue-50 rounded-lg p-4 mb-4 flex justify-between items-center">
+                  <div className="flex items-center text-left">
+                    <span className="text-2xl mr-3">
+                      {orderDetails.restaurant.image}
+                    </span>
+                    <div>
+                      <h3 className="font-bold">
+                        {orderDetails.restaurant.name}
+                      </h3>
+                      <p className="text-sm text-red-900">
+                        {orderDetails.restaurant.category}
+                      </p>
+                    </div>
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-gray-600">Estimated Time</p>
@@ -928,84 +1009,199 @@ const UserDashboard: React.FC = () => {
                     </p>
                   </div>
                 </div>
-              </div>
 
-              {/* Order Items */}
-              <div className="mb-4">
-                <h4 className="font-medium mb-2">Order Items</h4>
-                {orderDetails.items.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex justify-between text-sm mb-1"
-                  >
-                    <span>
-                      {item.name} x{item.quantity}
-                    </span>
-                    <span>${(item.price * item.quantity).toFixed(2)}</span>
+                {/* Carrier Info */}
+                <div className="bg-blue-50 rounded-lg flex justify-between items-center px-4 py-2 mb-4 border-l-4 border-red-900">
+                  <h4 className="font-medium text-red-900">Your Carrier</h4>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">
+                        {orderDetails.carrier?.name || "No carrier available"}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Distance: {orderDetails.distance} km
+                      </p>
+                    </div>
                   </div>
-                ))}
-              </div>
+                </div>
+
+                {/* Order Items */}
+                <div className="mb-4">
+                  <h4 className="font-medium mb-2">Order Items</h4>
+                  {orderDetails.items.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex justify-between text-sm mb-1"
+                    >
+                      <span>
+                        {item.name} x{item.quantity}
+                      </span>
+                      <span>${(item.price * item.quantity).toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
                 {/* Cost Breakdown */}
                 <div className="border-t border-gray-200 pt-4 mb-6">
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                  <span>Subtotal</span>
-                  <span>${orderDetails.costs.subtotal.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between"> {/* We have a base delivery fee of 2$ */}
-                  <span>Delivery Fee</span>
-                  <span>$2.00</span>
-                  </div>
-                  {orderDetails.costs.weatherFee > 0 && (
-                  <div className="flex justify-between text-orange-600 group relative">
-                    <span className="flex items-center">
-                    Dynamic Conditions Fee
-                    <span className="ml-1 cursor-pointer text-orange-400" tabIndex={0}>
-                      <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
-                      <text x="12" y="16" textAnchor="middle" fontSize="12" fill="currentColor">?</text>
-                      </svg>
-                    </span>
-                    <div className="absolute left-0 top-6 z-10 hidden group-hover:block group-focus:block bg-white border border-orange-300 rounded-lg shadow-lg px-3 py-2 text-xs text-gray-700 w-64">
-                      This fee accounts for distance, weather, and other conditions affecting delivery time.
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>Subtotal</span>
+                      <span>${orderDetails.costs.subtotal.toFixed(2)}</span>
                     </div>
-                    </span>
-                    <span>${orderDetails.costs.weatherFee.toFixed(2)}</span>
+                    <div className="flex justify-between">
+                      {" "}
+                      {/* We have a base delivery fee of 2$ */}
+                      <span>Delivery Fee</span>
+                      <span>$2.00</span>
+                    </div>
+                    {orderDetails.costs.weatherFee > 0 && (
+                      <div className="flex justify-between text-orange-600 group relative">
+                        <span className="flex items-center">
+                          Dynamic Conditions Fee
+                          <span
+                            className="ml-1 cursor-pointer text-orange-400"
+                            tabIndex={0}
+                          >
+                            <svg
+                              width="16"
+                              height="16"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                              />
+                              <text
+                                x="12"
+                                y="16"
+                                textAnchor="middle"
+                                fontSize="12"
+                                fill="currentColor"
+                              >
+                                ?
+                              </text>
+                            </svg>
+                          </span>
+                          <div className="absolute left-0 top-6 z-10 hidden group-hover:block group-focus:block bg-white border border-orange-300 rounded-lg shadow-lg px-3 py-2 text-xs text-gray-700 w-64">
+                            This fee accounts for distance, weather, and other
+                            conditions affecting delivery time.
+                          </div>
+                        </span>
+                        <span>${orderDetails.costs.weatherFee.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span>Service Fee</span>
+                      <span>${orderDetails.costs.serviceFee.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Tax</span>
+                      <span>${orderDetails.costs.tax.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between font-bold text-lg border-t border-gray-200 pt-2">
+                      <span>Total</span>
+                      <span className="text-red-900">
+                        ${orderDetails.costs.total.toFixed(2)}
+                      </span>
+                    </div>
                   </div>
-                  )}
-                  <div className="flex justify-between">
-                  <span>Service Fee</span>
-                  <span>${orderDetails.costs.serviceFee.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                  <span>Tax</span>
-                  <span>${orderDetails.costs.tax.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between font-bold text-lg border-t border-gray-200 pt-2">
-                  <span>Total</span>
-                  <span className="text-red-900">
-                    ${orderDetails.costs.total.toFixed(2)}
-                  </span>
-                  </div>
-                </div>
                 </div>
 
-              {/* Action Buttons */}
-              <div className="flex gap-3">
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowOrderConfirmation(false)}
+                    className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={creditCard}
+                    className="flex-1 bg-red-900 hover:bg-red-800 text-white py-3 rounded-lg font-medium transition-colors"
+                  >
+                    {buttonLoading ? <Spinner /> : "Proceed to Payment"}
+                  </button>
+                </div>
+              </div>
+            ) : paid ? (
+              <div className="p-6">
+                <div className="text-center mb-6">
+                  <CheckCircle
+                    size={48}
+                    className="mx-auto mb-3 text-red-900"
+                  />
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Order Placed Successfully!
+                  </h2>
+                </div>
+
+                <p className="text-gray-700 mb-4">
+                  Your order has been placed and your carrier will be notified.
+                </p>
+
+                <p className="text-sm text-gray-600 mb-6">
+                  You can track your order status in the app.
+                </p>
+
                 <button
                   onClick={() => setShowOrderConfirmation(false)}
-                  className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+                  className="w-full bg-red-900 hover:bg-red-800 text-white py-3 rounded-lg font-medium transition-colors"
                 >
-                  Cancel
-                </button>
-                <button
-                  onClick={placeOrder}
-                  className="flex-1 bg-red-900 hover:bg-red-800 text-white py-3 rounded-lg font-medium transition-colors"
-                >
-                  {buttonLoading ? <Spinner /> : "Place Order"}
+                  Close
                 </button>
               </div>
-            </div>
+            ) : (
+              <div className="p-6">
+                {" "}
+                <div className="text-center mb-6">
+                  <CreditCard size={48} className="mx-auto mb-3 text-red-900" />
+                  <h2 className="text-2xl text-gray-900">Payment Method</h2>
+                </div>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="mb-4">
+                    <div>
+                      {clientSecret && (
+                
+                          <EmbeddedCheckoutProvider stripe={stripePromise} options={{
+                                clientSecret: clientSecret,
+                                fetchClientSecret: undefined,
+                                onComplete: undefined,
+                                onShippingDetailsChange: undefined,
+                                onLineItemsChange: undefined
+                              }} >
+                            <EmbeddedCheckout />
+                          </EmbeddedCheckoutProvider>
+            
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowOrderConfirmation(false)}
+                      className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      // disabled={!stripe || buttonLoading}
+                      className="flex-1 bg-red-900 hover:bg-red-800 text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
+                    >
+                      {buttonLoading ? (
+                        <Spinner />
+                      ) : (
+                        `Pay $${orderDetails.costs.total.toFixed(2)}`
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
           </div>
         </div>
       )}

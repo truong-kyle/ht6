@@ -4,6 +4,7 @@ from flask import Flask, jsonify, redirect, request
 import stripe
 from pathlib import Path
 from flask_cors import CORS
+from urllib.parse import unquote  # Add this import
 
 load_dotenv(find_dotenv(usecwd=True))
 
@@ -30,12 +31,9 @@ def create_checkout_session():
         
         # Add main items
         for item in items:
-            # Build product_data dict conditionally
             product_data = {
                 'name': item['name'],
             }
-            
-            # Only add description if it exists and is not empty
             if item.get('description') and item['description'].strip():
                 product_data['description'] = item['description']
             
@@ -62,24 +60,83 @@ def create_checkout_session():
                 'quantity': 1,
             })
         
+        # Create the checkout session
         session = stripe.checkout.Session.create(
-            ui_mode="custom",
+            ui_mode='embedded',
             line_items=line_items,
-            mode='payment',  # Required for one-time payments
-           
+            mode='payment', 
+            return_url=f"{domain}/checkout/success",
         )
+
+        # Log the session object for debugging
+        print("Checkout session created:", session)
         
-        return jsonify(client_secret=session.client_secret)
-        
+        # Decode the client secret if it's URL encoded
+        client_secret = session.client_secret
+        if client_secret and '%' in client_secret:
+            client_secret = unquote(client_secret)
+            print(f"Decoded client secret: {client_secret}")
+
+        return jsonify(
+            clientSecret=client_secret, 
+            sessionId=session.id, 
+            url=session.url
+        )
+
     except Exception as e:
         print(f"Error creating checkout session: {e}")
         return jsonify(error=str(e)), 500
 
+
+@app.route('/create-payment-intent', methods=['POST'])
+def create_payment_intent():
+    try:
+        # Get items and fees from request
+        item_details = request.json
+        items = item_details.get('items', [])
+        fees = item_details.get('fees', {})
+        
+        # Calculate total amount
+        total_amount = 0
+        
+        # Add main items
+        for item in items:
+            total_amount += int(item['price'] * 100) * item.get('quantity', 1)
+        
+        # Add fees
+        for fee_name, fee_amount in fees.items():
+            total_amount += int(fee_amount * 100)
+        
+        # Create a Payment Intent
+        payment_intent = stripe.PaymentIntent.create(
+            amount=total_amount,
+            currency='cad',
+            metadata={
+                'items': str(items),  # Store items info for reference
+                'fees': str(fees)
+            }
+        )
+        
+        # Decode client secret if needed
+        client_secret = payment_intent['client_secret']
+        if client_secret and '%' in client_secret:
+            client_secret = unquote(client_secret)
+            
+        return jsonify({
+            'clientSecret': client_secret,
+            'paymentIntentId': payment_intent.id
+        })
+        
+    except Exception as e:
+        print(f"Error creating payment intent: {e}")
+        return jsonify(error=str(e)), 500
+
 @app.route('/session-status', methods=['GET'])
 def session_status():
+    print("THIS IS THE PART THATS FAILING")
     """Check the status of a Stripe checkout session"""
     try:
-        session_id = request.args.get('session_id')
+        session_id = request.args.get('sessionId')
         session = stripe.checkout.Session.retrieve(session_id)
         
         return jsonify(
