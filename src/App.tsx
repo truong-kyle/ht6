@@ -114,9 +114,10 @@ export default function CampusCourierLanding() {
           <div className="flex justify-between items-center py-4 max-w-7xl mx-auto">
             <div className="flex items-center space-x-3 group cursor-pointer" onClick={() => navigate('/')}>
               <div className="transform transition-transform duration-300 group-hover:scale-110">
-                <div className="w-12 h-12 bg-gradient-to-r from-red-900 to-red-700 rounded-xl flex items-center justify-center shadow-lg">
-                  <Truck className="w-7 h-7 text-white" />
-                </div>
+              <img src="DormDash.png"
+  alt="DormDash Logo" 
+  className="w-12 h-12 rounded-xl shadow-lg object-cover transition-transform duration-300 group-hover:scale-110"
+/>
               </div>
               <div className="flex flex-col">
                 <span className="text-xl font-bold text-gray-900">DormDash</span>

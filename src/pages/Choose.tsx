@@ -49,13 +49,18 @@ export default function Choose() {
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3 group">
               <button onClick={handleBackClick} className="flex items-center space-x-3">
-                <div className="transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
-                  <div className="w-12 h-12 bg-gradient-to-r from-red-900 to-red-700 rounded-xl flex items-center justify-center shadow-lg animate-wiggle">
-                    <Car className="w-7 h-7 text-white" />
-                  </div>
-                </div>
+              <div className="transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
+  <div className="w-12 h-12 rounded-xl shadow-lg animate-wiggle overflow-hidden">
+    <img
+      src="DormDash.png"
+      alt="DormDash Logo"
+      className="w-full h-full object-cover"
+    />
+  </div>
+</div>
+
                 <div className="flex flex-col">
-                  <span className="text-xl font-bold text-gray-900">Campus Courier</span>
+                  <span className="text-xl font-bold text-gray-900">DormDash</span>
                   <span className="px-2 py-0.5 bg-gradient-to-r from-red-600 to-red-700 text-white text-xs font-medium rounded-full shadow-sm animate-glow">
                     Fast & Smart
                   </span>
