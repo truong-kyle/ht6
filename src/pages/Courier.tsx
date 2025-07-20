@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MapPin, DollarSign, Clock, Star, Navigation, CheckCircle, AlertCircle, User, Zap, Car, Route, TrendingUp } from 'lucide-react';
+import { MapPin, DollarSign, Clock, Star, Navigation, CheckCircle, AlertCircle, User, Zap, Car, Route, TrendingUp, House } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 // Define interfaces
 interface MenuItem {
@@ -73,7 +74,7 @@ interface OptimizedRoute {
 const CourierDashboard: React.FC = () => {
   const [courierProfile, setCourierProfile] = useState<CourierProfile>({
     id: 1,
-    name: "Alex Johnson",
+    name: "Kyle Truong",
     rating: 4.8,
     totalDeliveries: 247,
     todayEarnings: 89.50,
@@ -787,6 +788,9 @@ const CourierDashboard: React.FC = () => {
       <div className="w-[380px] bg-gradient-to-b from-gray-50 to-white border-l border-gray-200 overflow-y-auto shadow-lg">
         {/* Profile Header */}
         <div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-100 p-4 z-10">
+        <Link to="/">
+            <House className="top-4 -translate-x-1 absolute" />
+          </Link>
           <div className="text-xl font-bold text-gray-800 mb-2">Welcome, {courierProfile.name}</div>
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center bg-yellow-50 px-3 py-1 rounded-full">

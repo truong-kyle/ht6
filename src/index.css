@@ -274,3 +274,7 @@ html, body {
 .no-x-overflow {
   @apply overflow-x-hidden;
 }
+
+::-webkit-scrollbar {
+    display: none;
+}
