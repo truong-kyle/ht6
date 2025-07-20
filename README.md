@@ -1,8 +1,8 @@
 # Dash2Dorm
 3++'s submission for Hack the 6ix 2025
 ##
-Documentation on Vellum:
-<a href=""></a>
+<a href="">Vellum Documentation</a>
+
 ## Instructions
 1. Install all node packages using `npm install`
 2. Create a virtual environment to run the Stripe Backend, installing all requirements in `requirements.txt`
