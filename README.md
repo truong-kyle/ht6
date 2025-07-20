@@ -27,6 +27,7 @@ _3++'s submission for Hack the 6ix 2025_
 
 ---
 
+
 ## 📈 Stats
 
 - **< 15min** average delivery time
@@ -58,6 +59,75 @@ Join our campus food delivery community as a **customer** or **carrier**!
 
 ---
 
+## 💻 Vellum Code
+
+Our platform integrates Vellum for AI-powered delivery routing and smart incentive workflows.  
+Below is a real code example from our project showing how we call Vellum in production:
+
+```typescript
+// src/services/checkIncentives.tsx
+
+export async function checkIncentive() {
+  try {
+    const response = await fetch("https://api.vellum.ai/workflows/run", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${import.meta.env.VITE_VELLUM_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        "inputs": [
+          {
+            "name": "Weather",
+            "type": "STRING",
+            "value": "Clear"
+          },
+          {
+            "name": "Demand",
+            "type": "STRING",
+            "value": "Low Demand"
+          },
+          {
+            "name": "Active Walkers",
+            "type": "STRING",
+            "value": "10"
+          }
+        ],
+        "workflow_deployment_name": import.meta.env.VITE_VELLUM_WORKFLOW ?? "inclement-weather",
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const body = await response.json();
+    
+    if (!body.data || !body.data.outputs || body.data.outputs.length === 0) {
+      throw new Error("Invalid response format from Vellum API");
+    }
+
+    const finalStatus = body.data.outputs[0].value;
+    console.log("Workflow executed successfully:", finalStatus);
+    return finalStatus;
+    
+  } catch (error) {
+    console.error("Error in checkIncentive:", error);
+    throw error; // Re-throw the error so it can be caught by the caller
+  }
+}
+```
+
+- **Environment variables required:**  
+  - `VITE_VELLUM_API_KEY`  
+  - `VITE_VELLUM_WORKFLOW`  
+
+This workflow lets Dash2Dorm dynamically respond to real campus demand, weather, and active delivery walkers—enabling smart routing and incentive logic for our student couriers.  
+
+Vellum Workflow: https://app.vellum.ai/workflow-sandboxes/0aa4150b-efc9-4c97-bba1-fdc1ea23a2f7
+
+---
+
 ## 🗝️ Environment Variables
 
 Paste these into a `.env` file:
@@ -80,12 +150,6 @@ VITE_VELLUM_WORKFLOW=your_vellum_workflow
 Built by students at York University for students everywhere.  
 _"We built Dash2Dorm to solve real problems we faced as students—long food delivery waits, high costs, and unreliable service. Our solution combines cutting-edge technology with deep understanding of campus life."_  
 **— The Dash2Dorm Team**
-
----
-
-## 📄 Documentation
-
-Find detailed docs at [Vellum Documentation](#).
 
 ---
 
