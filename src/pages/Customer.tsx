@@ -945,37 +945,50 @@ const UserDashboard: React.FC = () => {
                   </div>
                 ))}
               </div>
-
-              {/* Cost Breakdown */}
-              <div className="border-t border-gray-200 pt-4 mb-6">
+                {/* Cost Breakdown */}
+                <div className="border-t border-gray-200 pt-4 mb-6">
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span>Subtotal</span>
-                    <span>${orderDetails.costs.subtotal.toFixed(2)}</span>
+                  <span>Subtotal</span>
+                  <span>${orderDetails.costs.subtotal.toFixed(2)}</span>
                   </div>
-
+                  <div className="flex justify-between"> {/* We have a base delivery fee of 2$ */}
+                  <span>Delivery Fee</span>
+                  <span>$2.00</span>
+                  </div>
                   {orderDetails.costs.weatherFee > 0 && (
-                    <div className="flex justify-between text-orange-600">
-                      <span>Weather Fee</span>
-                      <span>${orderDetails.costs.weatherFee.toFixed(2)}</span>
+                  <div className="flex justify-between text-orange-600 group relative">
+                    <span className="flex items-center">
+                    Dynamic Conditions Fee
+                    <span className="ml-1 cursor-pointer text-orange-400" tabIndex={0}>
+                      <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                      <text x="12" y="16" textAnchor="middle" fontSize="12" fill="currentColor">?</text>
+                      </svg>
+                    </span>
+                    <div className="absolute left-0 top-6 z-10 hidden group-hover:block group-focus:block bg-white border border-orange-300 rounded-lg shadow-lg px-3 py-2 text-xs text-gray-700 w-64">
+                      This fee accounts for distance, weather, and other conditions affecting delivery time.
                     </div>
+                    </span>
+                    <span>${orderDetails.costs.weatherFee.toFixed(2)}</span>
+                  </div>
                   )}
                   <div className="flex justify-between">
-                    <span>Service Fee</span>
-                    <span>${orderDetails.costs.serviceFee.toFixed(2)}</span>
+                  <span>Service Fee</span>
+                  <span>${orderDetails.costs.serviceFee.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Tax</span>
-                    <span>${orderDetails.costs.tax.toFixed(2)}</span>
+                  <span>Tax</span>
+                  <span>${orderDetails.costs.tax.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between font-bold text-lg border-t border-gray-200 pt-2">
-                    <span>Total</span>
-                    <span className="text-red-900">
-                      ${orderDetails.costs.total.toFixed(2)}
-                    </span>
+                  <span>Total</span>
+                  <span className="text-red-900">
+                    ${orderDetails.costs.total.toFixed(2)}
+                  </span>
                   </div>
                 </div>
-              </div>
+                </div>
 
               {/* Action Buttons */}
               <div className="flex gap-3">
