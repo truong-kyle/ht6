@@ -40,7 +40,7 @@ export async function checkIncentive() {       //USE THIS TO SHOW INCENTIVE, how
             "value": "10"
           }
         ],
-        "workflow_deployment_name": "inclement-weather"
+        "workflow_deployment_name": import.meta.env.VITE_VELLUM_WORKFLOW ?? "inclement-weather",
       }),
     });
 

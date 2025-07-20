@@ -54,7 +54,7 @@ interface Carrier {
 
 interface OrderCosts {
   subtotal: number;
-
+  deliveryFee: number;
   weatherFee: number;
   serviceFee: number;
   tax: number;
@@ -517,22 +517,22 @@ const UserDashboard: React.FC = () => {
       (sum, item) => sum + item.price * item.quantity,
       0
     );
-
+    const deliveryFee = 2;
     //TODO: Replace with actual distance calculation
     const weatherFee = await calculatePricing(
       calculateDistance(userLocation, restaurant.location)
     );
     // const weatherFee = 3; // Placeholder for weather fee calculation
-    const serviceFee = subtotal * 0.05;
-    const tax = (subtotal + serviceFee) * 0.13;
+    const serviceFee = Math.floor(subtotal * 0.05 * 100) / 100;
+    const tax = Math.floor((subtotal + serviceFee) * 0.13 * 100) / 100;
 
     return {
       subtotal,
-
+      deliveryFee,
       weatherFee,
       serviceFee,
       tax,
-      total: subtotal + weatherFee + serviceFee + tax,
+      total: subtotal + weatherFee + serviceFee + tax + deliveryFee,
     };
   };
 
@@ -551,6 +551,12 @@ const UserDashboard: React.FC = () => {
               name: item.name,
               price: item.price,
             })),
+            fees: {
+              delivery_fee: orderDetails?.costs.deliveryFee,
+              service_fee: orderDetails?.costs.serviceFee,
+              weather_fee: orderDetails?.costs.weatherFee,
+              tax: orderDetails?.costs.tax,
+            },
           }),
         }
       );
@@ -584,27 +590,6 @@ const UserDashboard: React.FC = () => {
       }
     } finally {
       setButtonLoading(false);
-    }
-  };
-
-  // If you still need session status checking (for other purposes), here's the corrected version:
-  const checkSessionStatus = async (sessionId) => {
-    try {
-      const response = await fetch(
-        `${
-          import.meta.env.VITE_BACKEND_URL
-        }/session-status?sessionId=${sessionId}`
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Error checking session status:", error);
-      throw error;
     }
   };
 
@@ -660,83 +645,7 @@ const UserDashboard: React.FC = () => {
     setOrderDetails(newOrderDetails);
     setShowOrderConfirmation(true);
     setButtonLoading(false);
-    // try {
-    //   const response = await fetch(
-    //     `${import.meta.env.VITE_BACKEND_URL}/create-checkout-session`,
-    //     {
-    //       method: "POST",
-    //       headers: { "Content-Type": "application/json" },
-    //       body: JSON.stringify({
-    //         items: newOrderDetails.items.map((item) => ({
-    //           productId: item.productId,
-    //           quantity: item.quantity,
-    //           name: item.name,
-    //           price: item.price,
-    //         })),
-    //         fees: {
-    //           subtotal: newOrderDetails.costs.subtotal,
-    //           weatherFee: newOrderDetails.costs.weatherFee,
-    //           serviceFee: newOrderDetails.costs.serviceFee,
-    //           tax: newOrderDetails.costs.tax,
-    //           total: newOrderDetails.costs.total,
-    //         },
-    //         restaurantId: newOrderDetails.restaurant.id,
-    //         carrierId: newOrderDetails.carrier?.id,
-    //       }),
-    //     }
-    //   );
-
-    //   if (response.ok) {
-    //     const data = await response.json();
-    //     console.log("Checkout session created:", data);
-
-    //     // Set order details and show confirmation
-    //     setOrderDetails(newOrderDetails);
-    //     setShowOrderConfirmation(true);
-    //   } else {
-    //     const errorData = await response.json();
-    //     console.error("Checkout session error:", errorData);
-    //     alert(
-    //       `Failed to create checkout session: ${
-    //         errorData.message || "Unknown error"
-    //       }`
-    //     );
-    //   }
-    // } catch (error) {
-    //   console.error("Error creating checkout session:", error);
-    //   alert("Network error. Please check your connection and try again.");
-    // } finally {
-    // setButtonLoading(false);
   };
-
-  const placeOrder = async (): Promise<void> => {
-    // try {
-    //   const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/create-checkout-session`, {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify({
-    //       items: orderDetails?.items,
-    //       fees: orderDetails?.costs,
-    //     }),
-    //   });
-    //   if (response.ok) {
-    //     console.log(response.json());
-    //     alert("Order placed successfully! Your carrier will be notified.");
-    //     setCart([]);
-    //     setSelectedRestaurant(null);
-    //     setShowOrderConfirmation(false);
-    //     setOrderDetails(null);
-    //   }
-    // } catch (error) {
-    //   console.error("Error placing order:", error);
-    //   alert("Failed to place order. Please try again.");
-    // }
-  };
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>): void {
-    throw new Error("Function not implemented.");
-  }
-  const options = clientSecret ? { clientSecret } : undefined;
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -890,7 +799,7 @@ const UserDashboard: React.FC = () => {
 
         {/* Selected Restaurant Menu */}
         {selectedRestaurant && (
-          <div className="border-t-2 border-red-200 max-h-96 overflow-y-auto bg-red-50">
+          <div className="max-h-80 border-t-2 border-red-200 overflow-y-auto bg-red-50">
             <div className="p-4">
               <h3 className="font-bold text-lg mb-3 flex items-center text-red-900">
                 <ShoppingCart size={20} className="mr-2" />
@@ -973,7 +882,10 @@ const UserDashboard: React.FC = () => {
 
       {/* Order Confirmation Modal */}
       {showOrderConfirmation && orderDetails && (
-        <div className="fixed inset-0 bg-black/55 bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div
+          
+          className="fixed inset-0 bg-black/55 bg-opacity-50 flex items-center justify-center z-50 p-4"
+        >
           <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             {!payment ? (
               <div className="p-6">
@@ -1160,46 +1072,30 @@ const UserDashboard: React.FC = () => {
                   <CreditCard size={48} className="mx-auto mb-3 text-red-900" />
                   <h2 className="text-2xl text-gray-900">Payment Method</h2>
                 </div>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="mb-4">
-                    <div>
-                      {clientSecret && (
-                
-                          <EmbeddedCheckoutProvider stripe={stripePromise} options={{
-                                clientSecret: clientSecret,
-                                fetchClientSecret: undefined,
-                                onComplete: undefined,
-                                onShippingDetailsChange: undefined,
-                                onLineItemsChange: undefined
-                              }} >
-                            <EmbeddedCheckout />
-                          </EmbeddedCheckoutProvider>
-            
-                      )}
-                    </div>
+                <div className="mb-4">
+                  <div>
+                    {clientSecret && (
+                      <EmbeddedCheckoutProvider
+                        stripe={stripePromise}
+                        options={{
+                          clientSecret: clientSecret,
+                          onComplete: undefined,
+                        }}
+                      >
+                        <EmbeddedCheckout />
+                      </EmbeddedCheckoutProvider>
+                    )}
                   </div>
-
-                  <div className="flex gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setShowOrderConfirmation(false)}
-                      className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      // disabled={!stripe || buttonLoading}
-                      className="flex-1 bg-red-900 hover:bg-red-800 text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
-                    >
-                      {buttonLoading ? (
-                        <Spinner />
-                      ) : (
-                        `Pay $${orderDetails.costs.total.toFixed(2)}`
-                      )}
-                    </button>
-                  </div>
-                </form>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowOrderConfirmation(false)}
+                    className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             )}
           </div>

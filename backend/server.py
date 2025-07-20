@@ -26,10 +26,20 @@ def create_checkout_session():
         if not items:
             return jsonify(error="No items provided"), 400
         
-        # Build line items array
+        # Add fees to items list
+        for fee_name, fee_amount in fees.items():
+            fee_item = {
+                'name': fee_name.replace('_', ' ').title(),
+                'description': f'{fee_name.replace("_", " ").title()} fee',
+                'price': fee_amount,
+                'quantity': 1,
+                'is_fee': True  # Optional: flag to identify fees
+            }
+            items.append(fee_item)
+        
+        # Build line items array from combined items (now includes fees)
         line_items = []
         
-        # Add main items
         for item in items:
             product_data = {
                 'name': item['name'],
@@ -44,20 +54,6 @@ def create_checkout_session():
                     'unit_amount': int(item['price'] * 100),  # Convert to cents
                 },
                 'quantity': item.get('quantity', 1),
-            })
-        
-        # Add custom fees as separate line items
-        for fee_name, fee_amount in fees.items():
-            line_items.append({
-                'price_data': {
-                    'currency': 'cad',
-                    'product_data': {
-                        'name': fee_name.replace('_', ' ').title(),
-                        'description': f'{fee_name.replace("_", " ").title()} fee',
-                    },
-                    'unit_amount': int(fee_amount * 100),  # Convert to cents
-                },
-                'quantity': 1,
             })
         
         # Create the checkout session
@@ -96,24 +92,28 @@ def create_payment_intent():
         items = item_details.get('items', [])
         fees = item_details.get('fees', {})
         
-        # Calculate total amount
-        total_amount = 0
+        # Add fees to items list
+        for fee_name, fee_amount in fees.items():
+            fee_item = {
+                'name': fee_name.replace('_', ' ').title(),
+                'description': f'{fee_name.replace("_", " ").title()}',
+                'price': fee_amount,
+                'quantity': 1,
+                'is_fee': True  # Optional: flag to identify fees
+            }
+            items.append(fee_item)
         
-        # Add main items
+        # Calculate total amount from combined items
+        total_amount = 0
         for item in items:
             total_amount += int(item['price'] * 100) * item.get('quantity', 1)
-        
-        # Add fees
-        for fee_name, fee_amount in fees.items():
-            total_amount += int(fee_amount * 100)
         
         # Create a Payment Intent
         payment_intent = stripe.PaymentIntent.create(
             amount=total_amount,
             currency='cad',
             metadata={
-                'items': str(items),  # Store items info for reference
-                'fees': str(fees)
+                'items': str(items)  # Now includes fees in the items list
             }
         )
         
@@ -133,8 +133,6 @@ def create_payment_intent():
 
 @app.route('/session-status', methods=['GET'])
 def session_status():
-    print("THIS IS THE PART THATS FAILING")
-    """Check the status of a Stripe checkout session"""
     try:
         session_id = request.args.get('sessionId')
         session = stripe.checkout.Session.retrieve(session_id)
