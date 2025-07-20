@@ -170,8 +170,8 @@ export default function CampusCourierLanding() {
             >
               <div className="transform transition-transform duration-300 group-hover:scale-110">
                 <img
-                  src="DormDash.png"
-                  alt="DormDash Logo"
+                  src="Dash2Dorm.png"
+                  alt="Dash2Dorm Logo"
                   className="w-12 h-12 rounded-xl shadow-lg object-cover transition-transform duration-300 group-hover:scale-110"
                 />
               </div>

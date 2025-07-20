@@ -64,8 +64,8 @@ export default function Choose() {
                 <div className="transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
                   <div className="w-12 h-12 rounded-xl shadow-lg animate-wiggle overflow-hidden">
                     <img
-                      src="DormDash.png"
-                      alt="DormDash Logo"
+                      src="Dash2Dorm.png"
+                      alt="Dash2Dorm Logo"
                       className="w-full h-full object-cover"
                     />
                   </div>
