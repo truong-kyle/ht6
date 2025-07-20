@@ -67,11 +67,7 @@ def create_checkout_session():
         # Log the session object for debugging
         print("Checkout session created:", session)
         
-        # Decode the client secret if it's URL encoded
-        client_secret = session.client_secret
-        if client_secret and '%' in client_secret:
-            client_secret = unquote(client_secret)
-            print(f"Decoded client secret: {client_secret}")
+       
 
         return jsonify(
             clientSecret=client_secret, 
