@@ -49,13 +49,18 @@ export default function Choose() {
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3 group">
               <button onClick={handleBackClick} className="flex items-center space-x-3">
-                <div className="transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
-                  <div className="w-12 h-12 bg-gradient-to-r from-red-900 to-red-700 rounded-xl flex items-center justify-center shadow-lg animate-wiggle">
-                    <Car className="w-7 h-7 text-white" />
-                  </div>
-                </div>
+              <div className="transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
+  <div className="w-12 h-12 rounded-xl shadow-lg animate-wiggle overflow-hidden">
+    <img
+      src="DormDash.png"
+      alt="DormDash Logo"
+      className="w-full h-full object-cover"
+    />
+  </div>
+</div>
+
                 <div className="flex flex-col">
-                  <span className="text-xl font-bold text-gray-900">Campus Courier</span>
+                  <span className="text-xl font-bold text-gray-900">DormDash</span>
                   <span className="px-2 py-0.5 bg-gradient-to-r from-red-600 to-red-700 text-white text-xs font-medium rounded-full shadow-sm animate-glow">
                     Fast & Smart
                   </span>
@@ -166,7 +171,12 @@ export default function Choose() {
           >
             <div className="text-center">
               <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 transform transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 shadow-lg animate-drive">
-                <Car className="w-10 h-10 text-blue-700" />
+              <img
+  src="boxes.png"
+  alt="Carrier Icon"
+  className="w-10 h-10 object-contain"
+/>
+
               </div>
               
               <h2 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-blue-800 transition-colors duration-300">
@@ -214,7 +224,7 @@ export default function Choose() {
                 onClick={handleCarrierClick}
                 className="w-full bg-blue-600 text-white py-4 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 hover:shadow-lg inline-flex items-center justify-center group animate-button-glow"
               >
-                <Car className="w-5 h-5 mr-2 transition-transform duration-300 group-hover:rotate-12" />
+                
                 Start Delivering
               </button>
             </div>
