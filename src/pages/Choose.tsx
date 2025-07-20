@@ -55,7 +55,7 @@ export default function Choose() {
                   </div>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xl font-bold text-gray-900">Campus Courier</span>
+                  <span className="text-xl font-bold text-gray-900">DormDash</span>
                   <span className="px-2 py-0.5 bg-gradient-to-r from-red-600 to-red-700 text-white text-xs font-medium rounded-full shadow-sm animate-glow">
                     Fast & Smart
                   </span>
