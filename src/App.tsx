@@ -1,31 +1,42 @@
 import { useState, useEffect } from "react";
-// CHANGE: Added useNavigate import for React Router navigation
 import { useNavigate } from "react-router-dom";
-import { MapPin, Clock, DollarSign, Shield, Users, Truck, CloudRain, Route, Star } from "lucide-react";
+import { useAuth, useUser } from "@clerk/clerk-react";
+import { MapPin, Clock, DollarSign, Shield, Users, Truck, CloudRain, Route, Star, LogOut, UserPlus, LogIn, ChevronDown } from "lucide-react";
 import { testWeatherOutput} from "./services/weatherService";
 import { checkIncentive } from "./services/checkIncentives";
 
 testWeatherOutput()
 checkIncentive()
+
 export default function CampusCourierLanding() {
   const [isVisible, setIsVisible] = useState(false);
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   
-  // CHANGE: Added useNavigate hook for programmatic navigation
   const navigate = useNavigate();
+  const { isSignedIn, signOut } = useAuth();
+  const { user } = useUser();
 
   useEffect(() => {
     setIsVisible(true);
   }, []);
 
-  // CHANGE: Added navigation handler for Order Now buttons
-  const handleOrderNow = () => {
+  // Navigation handlers
+  const handleLogin = () => {
     navigate('/login');
   };
 
-  // CHANGE: Added navigation handler for Carrier buttons
-  const handleBecomeCarrier = () => {
-    navigate('/login');
+  const handleSignUp = () => {
+    navigate('/register');
+  };
+
+  const handleDashboard = () => {
+    navigate('/dashboard');
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    setShowUserMenu(false);
   };
 
   const featureCards = [
@@ -101,34 +112,117 @@ export default function CampusCourierLanding() {
       <header className="w-full bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-50 border-b border-white/20">
         <div className={`w-full max-w-none px-4 sm:px-6 lg:px-8 transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
           <div className="flex justify-between items-center py-4 max-w-7xl mx-auto">
-            <div className="flex items-center space-x-3 group">
+            <div className="flex items-center space-x-3 group cursor-pointer" onClick={() => navigate('/')}>
               <div className="transform transition-transform duration-300 group-hover:scale-110">
                 <div className="w-12 h-12 bg-gradient-to-r from-red-900 to-red-700 rounded-xl flex items-center justify-center shadow-lg">
                   <Truck className="w-7 h-7 text-white" />
                 </div>
               </div>
               <div className="flex flex-col">
-                <span className="text-xl font-bold text-gray-900">Campus Courier</span>
+                <span className="text-xl font-bold text-gray-900">DormDash</span>
                 <span className="px-2 py-0.5 bg-gradient-to-r from-red-600 to-red-700 text-white text-xs font-medium rounded-full shadow-sm">
                   Fast & Smart
                 </span>
               </div>
             </div>
             
-            {/* CHANGE: Added onClick handlers to header buttons */}
+            {/* Dynamic Header Buttons Based on Auth State */}
             <div className="flex items-center space-x-4">
-              <button 
-                onClick={handleBecomeCarrier}
-                className="px-4 py-2 text-red-900 hover:text-red-700 font-medium transition-all duration-300 transform hover:scale-105 hover:bg-red-50 rounded-lg"
-              >
-                For Carriers
-              </button>
-              <button 
-                onClick={handleOrderNow}
-                className="px-6 py-2 bg-red-900 text-white rounded-lg font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:bg-red-800"
-              >
-                Order Now
-              </button>
+              {isSignedIn ? (
+                // Authenticated User UI
+                <div className="flex items-center space-x-4">
+                  {/* Quick Dashboard Access */}
+                  <button 
+                    onClick={handleDashboard}
+                    className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center space-x-2"
+                  >
+                    <Truck className="w-4 h-4" />
+                    <span>Dashboard</span>
+                  </button>
+
+                  {/* User Profile Dropdown */}
+                  <div className="relative">
+                    <button 
+                      onClick={() => setShowUserMenu(!showUserMenu)}
+                      className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 font-medium rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:from-gray-200 hover:to-gray-300 group"
+                    >
+                      <div className="w-8 h-8 bg-gradient-to-r from-red-600 to-red-700 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                        {user?.firstName?.charAt(0) || user?.emailAddresses[0]?.emailAddress?.charAt(0)?.toUpperCase() || 'U'}
+                      </div>
+                      <span className="hidden sm:block">{user?.firstName || 'User'}</span>
+                      <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${showUserMenu ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {showUserMenu && (
+                      <div className="absolute right-0 mt-2 w-56 bg-white/95 backdrop-blur-sm rounded-xl shadow-xl border border-gray-200/50 py-2 z-50 animate-fade-in-up">
+                        <div className="px-4 py-3 border-b border-gray-200/50">
+                          <p className="text-sm font-medium text-gray-900">{user?.fullName || 'Welcome!'}</p>
+                          <p className="text-xs text-gray-500 truncate">{user?.emailAddresses[0]?.emailAddress}</p>
+                        </div>
+                        
+                        <button 
+                          onClick={handleDashboard}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 hover:text-red-800 transition-all duration-300 flex items-center space-x-2"
+                        >
+                          <Users className="w-4 h-4" />
+                          <span>Go to Dashboard</span>
+                        </button>
+                        
+                        <button 
+                          onClick={() => {
+                            navigate('/courier');
+                            setShowUserMenu(false);
+                          }}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 hover:text-blue-800 transition-all duration-300 flex items-center space-x-2"
+                        >
+                          <Truck className="w-4 h-4" />
+                          <span>Courier Mode</span>
+                        </button>
+                        
+                        <button 
+                          onClick={() => {
+                            navigate('/customer');
+                            setShowUserMenu(false);
+                          }}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gradient-to-r hover:from-green-50 hover:to-green-100 hover:text-green-800 transition-all duration-300 flex items-center space-x-2"
+                        >
+                          <Star className="w-4 h-4" />
+                          <span>Order Food</span>
+                        </button>
+                        
+                        <div className="border-t border-gray-200/50 my-2"></div>
+                        
+                        <button 
+                          onClick={handleLogout}
+                          className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 hover:text-red-700 transition-all duration-300 flex items-center space-x-2 group"
+                        >
+                          <LogOut className="w-4 h-4 group-hover:animate-pulse" />
+                          <span>Sign Out</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                // Unauthenticated User UI
+                <>
+                  <button 
+                    onClick={handleLogin}
+                    className="px-6 py-2 text-red-900 hover:text-red-700 font-medium transition-all duration-300 transform hover:scale-105 hover:bg-red-50 rounded-lg flex items-center space-x-2 group"
+                  >
+                    <LogIn className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                    <span>Sign In</span>
+                  </button>
+                  <button 
+                    onClick={handleSignUp}
+                    className="px-6 py-2 bg-gradient-to-r from-red-900 to-red-700 text-white rounded-lg font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:from-red-800 hover:to-red-600 flex items-center space-x-2 group"
+                  >
+                    <UserPlus className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300" />
+                    <span>Join Now</span>
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -140,7 +234,7 @@ export default function CampusCourierLanding() {
         <main className="w-full max-w-7xl mx-auto px-4 py-12 relative z-10">
           <div className={`text-center mb-16 transition-all duration-1000 delay-300 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
             <h1 className="text-6xl font-extrabold text-gray-900 mb-6 bg-gradient-to-r from-gray-900 via-red-900/80 to-red-700 bg-clip-text text-transparent">
-              Campus Food <span className="bg-gradient-to-r from-red-700 to-red-600 bg-clip-text text-transparent">Delivery</span>
+              Dorm <span className="bg-gradient-to-r from-red-700 to-red-600 bg-clip-text text-transparent">Dash</span>
             </h1>
             <p className="text-xl text-gray-600 mb-6 max-w-3xl mx-auto">
               Smart, fast, and reliable food delivery for university students. Weather-aware pricing, 
@@ -159,23 +253,57 @@ export default function CampusCourierLanding() {
               ))}
             </div>
 
-            {/* CHANGE: Added onClick handlers to hero CTA buttons */}
+            {/* Dynamic CTA Buttons Based on Auth State */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <button 
-                onClick={handleOrderNow}
-                className="inline-flex items-center px-8 py-4 bg-red-900 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:bg-red-800 group"
-              >
-                <Truck className="w-5 h-5 mr-2 transition-transform duration-300 group-hover:rotate-12" />
-                Order Food Now
-              </button>
-              <button 
-                onClick={handleBecomeCarrier}
-                className="inline-flex items-center px-8 py-4 bg-gray-100/80 backdrop-blur-sm text-gray-700 font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 hover:bg-gray-200 hover:shadow-lg"
-              >
-                <Users className="w-5 h-5 mr-2" />
-                Become a Carrier
-              </button>
+              {isSignedIn ? (
+                <>
+                  <button 
+                    onClick={handleDashboard}
+                    className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-red-900 to-red-700 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:from-red-800 hover:to-red-600 group"
+                  >
+                    <Star className="w-5 h-5 mr-2 transition-transform duration-300 group-hover:rotate-12" />
+                    Go to Dashboard
+                  </button>
+                  <button 
+                    onClick={() => navigate('/customer')}
+                    className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:from-green-700 hover:to-green-600 group"
+                  >
+                    <Truck className="w-5 h-5 mr-2 transition-transform duration-300 group-hover:translate-x-1" />
+                    Order Food Now
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button 
+                    onClick={handleSignUp}
+                    className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-red-900 to-red-700 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:from-red-800 hover:to-red-600 group"
+                  >
+                    <UserPlus className="w-5 h-5 mr-2 transition-transform duration-300 group-hover:rotate-12" />
+                    Get Started Free
+                  </button>
+                  <button 
+                    onClick={handleLogin}
+                    className="inline-flex items-center px-8 py-4 bg-gray-100/80 backdrop-blur-sm text-gray-700 font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 hover:bg-gray-200 hover:shadow-lg group"
+                  >
+                    <LogIn className="w-5 h-5 mr-2 transition-transform duration-300 group-hover:translate-x-1" />
+                    Sign In
+                  </button>
+                </>
+              )}
             </div>
+
+            {/* Welcome Message for Authenticated Users */}
+            {isSignedIn && (
+              <div className="bg-gradient-to-r from-green-100 to-blue-100 rounded-xl p-6 max-w-2xl mx-auto mb-8 border border-green-200/50 animate-fade-in-up">
+                <div className="flex items-center justify-center space-x-2 mb-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm font-medium text-green-800">Welcome back, {user?.firstName || 'friend'}!</span>
+                </div>
+                <p className="text-sm text-gray-600">
+                  You're logged in and ready to order food or start delivering. Choose your adventure! 🚀
+                </p>
+              </div>
+            )}
 
             {/* Quick Stats */}
             <div className="grid grid-cols-3 gap-8 max-w-lg mx-auto">
@@ -288,33 +416,73 @@ export default function CampusCourierLanding() {
             <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
               Join thousands of students who trust Campus Courier for fast, reliable food delivery
             </p>
-            {/* CHANGE: Added onClick handler to final CTA "Start Ordering" button */}
+            
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button 
-                onClick={handleOrderNow}
-                className="inline-flex items-center px-8 py-4 bg-red-900 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:bg-red-800 group"
-              >
-                <Star className="w-5 h-5 mr-2 transition-transform duration-300 group-hover:rotate-12" />
-                Start Ordering
-              </button>
-              <button className="inline-flex items-center px-8 py-4 border-2 border-red-200 text-red-800 font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 hover:bg-red-50 hover:border-red-300">
-                Learn More
-              </button>
+              {isSignedIn ? (
+                <>
+                  <button 
+                    onClick={() => navigate('/customer')}
+                    className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-red-900 to-red-700 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:from-red-800 hover:to-red-600 group"
+                  >
+                    <Star className="w-5 h-5 mr-2 transition-transform duration-300 group-hover:rotate-12" />
+                    Start Ordering
+                  </button>
+                  <button 
+                    onClick={() => navigate('/courier')}
+                    className="inline-flex items-center px-8 py-4 border-2 border-red-200 text-red-800 font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 hover:bg-red-50 hover:border-red-300 group"
+                  >
+                    <Truck className="w-5 h-5 mr-2 transition-transform duration-300 group-hover:translate-x-1" />
+                    Become a Courier
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button 
+                    onClick={handleSignUp}
+                    className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-red-900 to-red-700 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:from-red-800 hover:to-red-600 group"
+                  >
+                    <UserPlus className="w-5 h-5 mr-2 transition-transform duration-300 group-hover:rotate-12" />
+                    Join DormDash 
+                  </button>
+                  <button 
+                    onClick={handleLogin}
+                    className="inline-flex items-center px-8 py-4 border-2 border-red-200 text-red-800 font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 hover:bg-red-50 hover:border-red-300 group"
+                  >
+                    <LogIn className="w-5 h-5 mr-2 transition-transform duration-300 group-hover:translate-x-1" />
+                    Already a Member?
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </main>
       </div>
 
-      {/* Floating Delivery Bot */}
+      {/* Enhanced Floating Delivery Bot with Auth Awareness */}
       <div className="fixed bottom-6 right-6 z-50 animate-bounce-gentle">
         <div className="relative group">
-          <div className="w-16 h-16 bg-white rounded-full shadow-xl cursor-pointer transform transition-all duration-300 hover:scale-110 hover:shadow-2xl flex items-center justify-center border-4 border-red-200 hover:border-red-300">
+          <div 
+            className="w-16 h-16 bg-white rounded-full shadow-xl cursor-pointer transform transition-all duration-300 hover:scale-110 hover:shadow-2xl flex items-center justify-center border-4 border-red-200 hover:border-red-300"
+            onClick={() => {
+              if (isSignedIn) {
+                navigate('/dashboard');
+              } else {
+                navigate('/login');
+              }
+            }}
+          >
             <svg className="w-12 h-12" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
               {/* Robot Body */}
               <rect x="30" y="60" width="40" height="25" rx="8" fill="#DC2626" stroke="#991B1B" strokeWidth="2"/>
               
               {/* Robot Head */}
               <rect x="35" y="35" width="30" height="30" rx="15" fill="#EF4444" stroke="#991B1B" strokeWidth="2"/>
+              
+              {/* Eyes */}
+              <circle cx="42" cy="45" r="3" fill="#991B1B"/>
+              <circle cx="58" cy="45" r="3" fill="#991B1B"/>
+              <circle cx="42" cy="44" r="1" fill="white"/>
+              <circle cx="58" cy="44" r="1" fill="white"/>
               
               {/* Eyes */}
               <circle cx="42" cy="45" r="3" fill="#991B1B"/>
