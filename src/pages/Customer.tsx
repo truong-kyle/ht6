@@ -735,7 +735,6 @@ const UserDashboard: React.FC = () => {
 
       {/* Right Side - Restaurant List */}
       <div className="w-96 bg-white shadow-2xl overflow-hidden flex flex-col">
-        
         <div className="p-6 bg-gradient-to-br from-red-900 to-red-800 text-white">
           <Link to="/">
             <House className="top-3 -translate-x-3 absolute" />
@@ -887,10 +886,7 @@ const UserDashboard: React.FC = () => {
 
       {/* Order Confirmation Modal */}
       {showOrderConfirmation && orderDetails && (
-        <div
-          
-          className="fixed inset-0 bg-black/55 bg-opacity-50 flex items-center justify-center z-50 p-4"
-        >
+        <div className="fixed inset-0 bg-black/55 bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             {!payment ? (
               <div className="p-6">
@@ -1059,10 +1055,6 @@ const UserDashboard: React.FC = () => {
                   Your order has been placed and your carrier will be notified.
                 </p>
 
-                <p className="text-sm text-gray-600 mb-6">
-                  You can track your order status in the app.
-                </p>
-
                 <button
                   onClick={() => setShowOrderConfirmation(false)}
                   className="w-full bg-red-900 hover:bg-red-800 text-white py-3 rounded-lg font-medium transition-colors"
@@ -1084,7 +1076,9 @@ const UserDashboard: React.FC = () => {
                         stripe={stripePromise}
                         options={{
                           clientSecret: clientSecret,
-                          onComplete: undefined,
+                          onComplete: () => {
+                            setPaid(true);
+                          },
                         }}
                       >
                         <EmbeddedCheckout />

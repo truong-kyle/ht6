@@ -61,7 +61,7 @@ def create_checkout_session():
             ui_mode='embedded',
             line_items=line_items,
             mode='payment', 
-            return_url=f"{domain}/checkout/success",
+            redirect_on_completion='never'
         )
 
         # Log the session object for debugging

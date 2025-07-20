@@ -460,7 +460,7 @@ export default function CampusCourierLanding() {
         </main>
       </div>
 
-      {/* Enhanced Floating Delivery Bot with Auth Awareness */}
+      {/* Enhanced Floating Delivery Bot with Auth Awareness
       <div className="fixed bottom-6 right-6 z-50 animate-bounce-gentle">
         <div className="relative group">
           <div 
@@ -474,57 +474,57 @@ export default function CampusCourierLanding() {
             }}
           >
             <svg className="w-12 h-12" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-              {/* Robot Body */}
+              Robot Body
               <rect x="30" y="60" width="40" height="25" rx="8" fill="#DC2626" stroke="#991B1B" strokeWidth="2"/>
               
-              {/* Robot Head */}
+              Robot Head
               <rect x="35" y="35" width="30" height="30" rx="15" fill="#EF4444" stroke="#991B1B" strokeWidth="2"/>
               
-              {/* Eyes */}
+              Eyes
               <circle cx="42" cy="45" r="3" fill="#991B1B"/>
               <circle cx="58" cy="45" r="3" fill="#991B1B"/>
               <circle cx="42" cy="44" r="1" fill="white"/>
               <circle cx="58" cy="44" r="1" fill="white"/>
               
-              {/* Eyes */}
+              Eyes
               <circle cx="42" cy="45" r="3" fill="#991B1B"/>
               <circle cx="58" cy="45" r="3" fill="#991B1B"/>
               <circle cx="42" cy="44" r="1" fill="white"/>
               <circle cx="58" cy="44" r="1" fill="white"/>
               
-              {/* Smile */}
+              Smile
               <path d="M45 55 Q50 58, 55 55" stroke="#991B1B" strokeWidth="2" fill="none" strokeLinecap="round"/>
               
-              {/* Delivery Box */}
+              Delivery Box
               <rect x="40" y="20" width="20" height="12" rx="2" fill="#FCA5A5" stroke="#991B1B" strokeWidth="1"/>
               <line x1="45" y1="20" x2="45" y2="32" stroke="#991B1B" strokeWidth="1"/>
               <line x1="55" y1="20" x2="55" y2="32" stroke="#991B1B" strokeWidth="1"/>
               <line x1="40" y1="26" x2="60" y2="26" stroke="#991B1B" strokeWidth="1"/>
               
-              {/* Wheels */}
+              Wheels
               <circle cx="38" cy="88" r="6" fill="#374151" stroke="#991B1B" strokeWidth="1"/>
               <circle cx="62" cy="88" r="6" fill="#374151" stroke="#991B1B" strokeWidth="1"/>
               <circle cx="38" cy="88" r="3" fill="#6B7280"/>
               <circle cx="62" cy="88" r="3" fill="#6B7280"/>
               
-              {/* Antenna */}
+              Antenna
               <line x1="50" y1="35" x2="50" y2="28" stroke="#991B1B" strokeWidth="2"/>
               <circle cx="50" cy="25" r="2" fill="#EF4444" stroke="#991B1B" strokeWidth="1"/>
             </svg>
           </div>
           
-          {/* Tooltip */}
+          Tooltip
           <div className="absolute bottom-20 right-0 bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-2 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-y-0 translate-y-2 pointer-events-none whitespace-nowrap">
             <div className="text-sm font-medium">Need help? I'm CourierBot! 🤖</div>
             <div className="absolute bottom-0 right-4 transform translate-y-1/2 rotate-45 w-2 h-2 bg-white/90"></div>
           </div>
           
-          {/* Notification Badge */}
+          Notification Badge
           <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
             <div className="w-2 h-2 bg-white rounded-full"></div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       <style>
         {`
