@@ -74,7 +74,7 @@ interface OptimizedRoute {
 const CourierDashboard: React.FC = () => {
   const [courierProfile, setCourierProfile] = useState<CourierProfile>({
     id: 1,
-    name: "Alex Johnson",
+    name: "Kyle Truong",
     rating: 4.8,
     totalDeliveries: 247,
     todayEarnings: 89.50,

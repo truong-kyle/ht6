@@ -120,7 +120,7 @@ export default function CampusCourierLanding() {
 />
               </div>
               <div className="flex flex-col">
-                <span className="text-xl font-bold text-gray-900">DormDash</span>
+                <span className="text-xl font-bold text-gray-900">Dash2Dorm</span>
                 <span className="px-2 py-0.5 bg-gradient-to-r from-red-600 to-red-700 text-white text-xs font-medium rounded-full shadow-sm">
                   Fast & Smart
                 </span>
@@ -236,7 +236,7 @@ export default function CampusCourierLanding() {
         <main className="w-full max-w-7xl mx-auto px-4 py-12 relative z-10">
           <div className={`text-center mb-16 transition-all duration-1000 delay-300 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
             <h1 className="text-6xl font-extrabold text-gray-900 mb-6 bg-gradient-to-r from-gray-900 via-red-900/80 to-red-700 bg-clip-text text-transparent">
-              Dorm<span className="bg-gradient-to-r from-red-700 to-red-600 bg-clip-text text-transparent">Dash</span>
+              Dash<span className="bg-gradient-to-r from-red-700 to-red-600 bg-clip-text text-transparent">2Dorm</span>
             </h1>
             <p className="text-xl text-gray-600 mb-6 max-w-3xl mx-auto">
               Smart, fast, and reliable food delivery for university students. Weather-aware pricing, 
@@ -444,7 +444,7 @@ export default function CampusCourierLanding() {
                     className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-red-900 to-red-700 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:from-red-800 hover:to-red-600 group"
                   >
                     <UserPlus className="w-5 h-5 mr-2 transition-transform duration-300 group-hover:rotate-12" />
-                    Join DormDash 
+                    Join Dash2Dorm  
                   </button>
                   <button 
                     onClick={handleLogin}

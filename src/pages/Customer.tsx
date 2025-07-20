@@ -740,7 +740,7 @@ const UserDashboard: React.FC = () => {
           <Link to="/">
             <House className="top-3 -translate-x-3 absolute" />
           </Link>
-          <h2 className="text-xl font-bold mb-2">DormDash Delivery</h2>
+          <h2 className="text-xl font-bold mb-2">Dash2Dorm Delivery</h2>
           <p className="opacity-90 text-sm">
             {filteredRestaurants.length} restaurants near your location
           </p>
